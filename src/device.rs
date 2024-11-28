@@ -7,10 +7,7 @@ use std::{fmt, path::Path, str::FromStr};
 use nix::libc::{dev_t, major, makedev, minor};
 use nix::sys::stat::{self, SFlag};
 
-use crate::{
-    core::errors,
-    result::{DmError, DmResult},
-};
+use crate::errors::{DmError, DmResult};
 
 /// A struct containing the device's major and minor numbers
 ///
@@ -37,19 +34,19 @@ impl FromStr for Device {
         let vals = s.split(':').collect::<Vec<_>>();
         if vals.len() != 2 {
             let err_msg = format!("value \"{s}\" split into wrong number of fields");
-            return Err(DmError::Core(errors::Error::InvalidArgument(err_msg)));
+            return Err(DmError::InvalidArgument(err_msg));
         }
         let major = vals[0].parse::<u32>().map_err(|_| {
-            DmError::Core(errors::Error::InvalidArgument(format!(
+            DmError::InvalidArgument(format!(
                 "could not parse \"{}\" to obtain major number",
                 vals[0]
-            )))
+            ))
         })?;
         let minor = vals[1].parse::<u32>().map_err(|_| {
-            DmError::Core(errors::Error::InvalidArgument(format!(
+            DmError::InvalidArgument(format!(
                 "could not parse \"{}\" to obtain minor number",
                 vals[1]
-            )))
+            ))
         })?;
         Ok(Device { major, minor })
     }
@@ -106,10 +103,7 @@ pub fn devnode_to_devno(path: &Path) -> DmResult<Option<u64>> {
             },
         ),
         Err(nix::Error::ENOENT) => Ok(None),
-        Err(err) => Err(DmError::Core(errors::Error::MetadataIo(
-            path.to_owned(),
-            err.to_string(),
-        ))),
+        Err(err) => Err(DmError::MetadataIo(path.to_owned(), err.to_string())),
     }
 }
 

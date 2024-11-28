@@ -66,76 +66,36 @@
 #![warn(missing_docs)]
 
 #[macro_use]
-extern crate bitflags;
+extern crate log;
 #[macro_use]
 extern crate nix;
-#[macro_use]
-extern crate log;
 
-/// Range macros
-#[macro_use]
-mod range_macros;
-/// ID macros
-#[macro_use]
-mod id_macros;
-/// shared constants
-mod consts;
-/// core functionality
-mod core;
-/// Macros shared by device mapper devices.
-#[macro_use]
-mod shared_macros;
-/// cachedev
-mod cachedev;
-/// functions to create continuous linear space given device segments
-mod lineardev;
-/// return results container
-mod result;
-/// functionality shared between devices
-mod shared;
-/// the raw ioctl interface
-mod sys;
-/// allocate a device from a pool
-mod thindev;
-/// the id the pool uses to track its devices
-mod thindevid;
-/// thinpooldev is shared space for  other thin provisioned devices to use
-mod thinpooldev;
-/// representation of units used by the outer layers
-mod units;
-
-#[cfg(test)]
-mod testing;
-
-/// More useful test output for match cases
 #[cfg(test)]
 #[macro_use]
 extern crate assert_matches;
 
-pub use crate::{
-    cachedev::{
-        CacheDev, CacheDevPerformance, CacheDevStatus, CacheDevTargetTable, CacheDevUsage,
-        CacheDevWorkingStatus, CacheTargetParams, MAX_CACHE_BLOCK_SIZE, MIN_CACHE_BLOCK_SIZE,
-    },
-    consts::IEC,
-    core::{
-        devnode_to_devno, errors, DevId, Device, DeviceInfo, DmFlags, DmName, DmNameBuf, DmOptions,
-        DmUdevFlags, DmUuid, DmUuidBuf, DM,
-    },
-    lineardev::{
-        FlakeyTargetParams, LinearDev, LinearDevTargetParams, LinearDevTargetTable,
-        LinearTargetParams,
-    },
-    result::{DmError, DmResult, ErrorEnum},
-    shared::{
-        device_exists, message, DmDevice, TargetLine, TargetParams, TargetTable, TargetType,
-        TargetTypeBuf,
-    },
-    thindev::{ThinDev, ThinDevTargetTable, ThinDevWorkingStatus, ThinStatus, ThinTargetParams},
-    thindevid::ThinDevId,
-    thinpooldev::{
-        ThinPoolDev, ThinPoolDevTargetTable, ThinPoolNoSpacePolicy, ThinPoolStatus,
-        ThinPoolStatusSummary, ThinPoolTargetParams, ThinPoolUsage, ThinPoolWorkingStatus,
-    },
-    units::{Bytes, DataBlocks, MetaBlocks, Sectors, SECTOR_SIZE},
+#[macro_use]
+mod id_macros;
+
+mod device;
+mod deviceinfo;
+mod dm;
+mod dm_flags;
+mod dm_ioctl;
+mod dm_options;
+pub mod errors;
+mod sys;
+mod types;
+mod util;
+
+#[cfg(test)]
+mod testing;
+
+pub use self::{
+    device::{devnode_to_devno, Device},
+    deviceinfo::DeviceInfo,
+    dm::DM,
+    dm_flags::{DmFlags, DmUdevFlags},
+    dm_options::DmOptions,
+    types::{DevId, DmName, DmNameBuf, DmUuid, DmUuidBuf},
 };

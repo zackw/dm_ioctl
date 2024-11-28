@@ -48,7 +48,7 @@ macro_rules! str_id {
 
         impl $B {
             /// Create a new borrowed identifier from a `&str`.
-            pub fn new(value: &str) -> $crate::result::DmResult<&$B> {
+            pub fn new(value: &str) -> $crate::errors::DmResult<&$B> {
                 if let Some(err_msg) = str_check!(value, $MAX - 1) {
                     return Err($err_func(&err_msg));
                 }
@@ -78,7 +78,7 @@ macro_rules! str_id {
 
         impl $O {
             /// Construct a new owned identifier.
-            pub fn new(value: String) -> $crate::result::DmResult<$O> {
+            pub fn new(value: String) -> $crate::errors::DmResult<$O> {
                 if let Some(err_msg) = str_check!(&value, $MAX - 1) {
                     return Err($err_func(&err_msg));
                 }
@@ -111,10 +111,10 @@ macro_rules! str_id {
 mod tests {
     use std::ops::Deref;
 
-    use crate::{core::errors::Error, result::DmError};
+    use crate::errors::DmError;
 
     fn err_func(err_msg: &str) -> DmError {
-        DmError::Core(Error::InvalidArgument(err_msg.into()))
+        DmError::InvalidArgument(err_msg.into())
     }
 
     const TYPE_LEN: usize = 12;
@@ -123,25 +123,16 @@ mod tests {
     #[test]
     /// Test for errors on an empty name.
     fn test_empty_name() {
-        assert_matches!(Id::new(""), Err(DmError::Core(Error::InvalidArgument(_))));
-        assert_matches!(
-            IdBuf::new("".into()),
-            Err(DmError::Core(Error::InvalidArgument(_)))
-        );
+        assert_matches!(Id::new(""), Err(DmError::InvalidArgument(_)));
+        assert_matches!(IdBuf::new("".into()), Err(DmError::InvalidArgument(_)));
     }
 
     #[test]
     /// Test for errors on an overlong name.
     fn test_too_long_name() {
         let name = "a".repeat(TYPE_LEN + 1);
-        assert_matches!(
-            Id::new(&name),
-            Err(DmError::Core(Error::InvalidArgument(_)))
-        );
-        assert_matches!(
-            IdBuf::new(name),
-            Err(DmError::Core(Error::InvalidArgument(_)))
-        );
+        assert_matches!(Id::new(&name), Err(DmError::InvalidArgument(_)));
+        assert_matches!(IdBuf::new(name), Err(DmError::InvalidArgument(_)));
     }
 
     #[test]

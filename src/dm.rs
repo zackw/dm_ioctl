@@ -16,20 +16,17 @@ use retry::{delay::Fixed, retry_with_index, Error as RetryError, OperationResult
 use semver::Version;
 
 use crate::{
-    core::{
-        device::Device,
-        deviceinfo::DeviceInfo,
-        dm_flags::DmFlags,
-        dm_ioctl as dmi,
-        dm_options::DmOptions,
-        errors,
-        types::{DevId, DmName, DmNameBuf, DmUuid},
-        util::{
-            align_to, c_struct_from_slice, mut_slice_from_c_str, slice_from_c_struct,
-            str_from_byte_slice, str_from_c_str,
-        },
+    device::Device,
+    deviceinfo::DeviceInfo,
+    dm_flags::DmFlags,
+    dm_ioctl as dmi,
+    dm_options::DmOptions,
+    errors::{DmError, DmResult},
+    types::{DevId, DmName, DmNameBuf, DmUuid},
+    util::{
+        align_to, c_struct_from_slice, mut_slice_from_c_str, slice_from_c_struct,
+        str_from_byte_slice, str_from_c_str,
     },
-    result::{DmError, DmResult, ErrorEnum},
 };
 
 /// Control path for user space to pass IOCTL to kernel DM
@@ -80,8 +77,7 @@ impl DM {
     /// Create a new context for communicating with DM.
     pub fn new() -> DmResult<DM> {
         Ok(DM {
-            file: File::open(DM_CTL_PATH)
-                .map_err(|err| DmError::Core(errors::Error::ContextInit(err.to_string())))?,
+            file: File::open(DM_CTL_PATH).map_err(|err| DmError::ContextInit(err.to_string()))?,
         })
     }
 
@@ -89,7 +85,7 @@ impl DM {
         let _ = name
             .as_bytes()
             .read(mut_slice_from_c_str(&mut hdr.name))
-            .map_err(|err| errors::Error::GeneralIo(err.to_string()))?;
+            .map_err(|err| DmError::GeneralIo(err.to_string()))?;
         Ok(())
     }
 
@@ -97,7 +93,7 @@ impl DM {
         let _ = uuid
             .as_bytes()
             .read(mut_slice_from_c_str(&mut hdr.uuid))
-            .map_err(|err| errors::Error::GeneralIo(err.to_string()))?;
+            .map_err(|err| DmError::GeneralIo(err.to_string()))?;
         Ok(())
     }
 
@@ -149,12 +145,12 @@ impl DM {
             if let Err(err) = unsafe {
                 convert_ioctl_res!(nix_ioctl(self.file.as_raw_fd(), op, buffer.as_mut_ptr()))
             } {
-                return Err(DmError::Core(errors::Error::Ioctl(
+                return Err(DmError::Ioctl(
                     op as u8,
                     DeviceInfo::new(*hdr).ok().map(Box::new),
                     DeviceInfo::new(*buffer_hdr).ok().map(Box::new),
                     Box::new(err),
-                )));
+                ));
             }
 
             if (buffer_hdr.flags & DmFlags::DM_BUFFER_FULL.bits()) == 0 {
@@ -168,7 +164,7 @@ impl DM {
             // Never allow the size to exceed u32::MAX.
             let len = buffer.capacity();
             if len == u32::MAX as usize {
-                return Err(DmError::Core(errors::Error::IoctlResultTooLarge));
+                return Err(DmError::IoctlResultTooLarge);
             }
             buffer.resize((len as u32).saturating_mul(2) as usize, 0);
         }
@@ -237,10 +233,7 @@ impl DM {
             loop {
                 let device =
                     c_struct_from_slice::<dmi::Struct_dm_name_list>(result).ok_or_else(|| {
-                        DmError::Dm(
-                            ErrorEnum::Invalid,
-                            "Received null pointer from kernel".to_string(),
-                        )
+                        DmError::InvalidArgument("Received null pointer from kernel".to_string())
                     })?;
                 let name_offset = unsafe {
                     (device.name.as_ptr() as *const u8).offset_from(device as *const _ as *const u8)
@@ -249,10 +242,7 @@ impl DM {
                 let dm_name = str_from_byte_slice(&result[name_offset..])
                     .map(|s| s.to_owned())
                     .ok_or_else(|| {
-                        DmError::Dm(
-                            ErrorEnum::Invalid,
-                            "Devicemapper name is not valid UTF8".to_string(),
-                        )
+                        DmError::InvalidArgument("Devicemapper name is not valid UTF8".to_string())
                     })?;
 
                 // Get each device's event number after its name, if the kernel
@@ -266,8 +256,7 @@ impl DM {
                         result[offset..offset + size_of::<u32>()]
                             .try_into()
                             .map_err(|_| {
-                                DmError::Dm(
-                                    ErrorEnum::Invalid,
+                                DmError::InvalidArgument(
                                     "Incorrectly sized slice for u32".to_string(),
                                 )
                             })?,
@@ -339,15 +328,11 @@ impl DM {
 
         match self.do_ioctl(dmi::DM_DEV_REMOVE_CMD as u8, &mut hdr, None) {
             Err(err) => {
-                if let DmError::Core(errors::Error::Ioctl(op, hdr_in, hdr_out, errno)) = err {
+                if let DmError::Ioctl(op, hdr_in, hdr_out, errno) = err {
                     if *errno == errno::Errno::EBUSY {
-                        OperationResult::Retry(DmError::Core(errors::Error::Ioctl(
-                            op, hdr_in, hdr_out, errno,
-                        )))
+                        OperationResult::Retry(DmError::Ioctl(op, hdr_in, hdr_out, errno))
                     } else {
-                        OperationResult::Err(DmError::Core(errors::Error::Ioctl(
-                            op, hdr_in, hdr_out, errno,
-                        )))
+                        OperationResult::Err(DmError::Ioctl(op, hdr_in, hdr_out, errno))
                     }
                 } else {
                     OperationResult::Err(err)
@@ -528,7 +513,7 @@ impl DM {
             let _ = target_type
                 .as_bytes()
                 .read(dst)
-                .map_err(|err| errors::Error::GeneralIo(err.to_string()))?;
+                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
 
             // Size of the largest single member of dm_target_spec
             let align_to_size = size_of::<u64>();
@@ -537,15 +522,15 @@ impl DM {
 
             cursor
                 .write_all(slice_from_c_struct(&targ))
-                .map_err(|err| errors::Error::GeneralIo(err.to_string()))?;
+                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
             cursor
                 .write_all(params.as_bytes())
-                .map_err(|err| errors::Error::GeneralIo(err.to_string()))?;
+                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
 
             let padding = aligned_len - params.len();
             cursor
                 .write_all(vec![0; padding].as_slice())
-                .map_err(|err| errors::Error::GeneralIo(err.to_string()))?;
+                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
         }
 
         let mut hdr =
@@ -623,8 +608,7 @@ impl DM {
 
                 let target_type = str_from_c_str(&targ.target_type)
                     .ok_or_else(|| {
-                        DmError::Dm(
-                            ErrorEnum::Invalid,
+                        DmError::InvalidArgument(
                             "Could not convert target type to a String".to_string(),
                         )
                     })?
@@ -633,8 +617,7 @@ impl DM {
                 let params =
                     str_from_byte_slice(&result[size_of::<dmi::Struct_dm_target_spec>()..])
                         .ok_or_else(|| {
-                            DmError::Dm(
-                                ErrorEnum::Invalid,
+                            DmError::InvalidArgument(
                                 "Invalid DM target parameters returned from kernel".to_string(),
                             )
                         })?
@@ -713,8 +696,7 @@ impl DM {
                 let name =
                     str_from_byte_slice(&result[size_of::<dmi::Struct_dm_target_versions>()..])
                         .ok_or_else(|| {
-                            DmError::Dm(
-                                ErrorEnum::Invalid,
+                            DmError::InvalidArgument(
                                 "Invalid DM target name returned from kernel".to_string(),
                             )
                         })?
@@ -764,10 +746,7 @@ impl DM {
                 str::from_utf8(&data_out[..data_out.len() - 1])
                     .map(|res| res.to_string())
                     .map_err(|_| {
-                        DmError::Dm(
-                            ErrorEnum::Invalid,
-                            "Could not convert output to a String".to_string(),
-                        )
+                        DmError::InvalidArgument("Could not convert output to a String".to_string())
                     })?,
             )
         } else {
@@ -798,8 +777,7 @@ impl AsRawFd for DM {
 mod tests {
 
     use crate::{
-        core::errors::Error,
-        result::DmError,
+        errors::DmError,
         testing::{test_name, test_uuid},
     };
 
@@ -890,7 +868,7 @@ mod tests {
 
         assert_matches!(
             dm.device_rename(&name, &DevId::Uuid(&new_uuid)),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EINVAL && op == dmi::DM_DEV_RENAME_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EINVAL && op == dmi::DM_DEV_RENAME_CMD as u8
         );
 
         dm.device_remove(&DevId::Name(&name), DmOptions::default())
@@ -908,7 +886,7 @@ mod tests {
             .unwrap();
         assert_matches!(
             dm.device_rename(&name, &DevId::Uuid(&uuid)),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
         );
 
         dm.device_remove(&DevId::Name(&name), DmOptions::default())
@@ -945,7 +923,7 @@ mod tests {
 
         assert_matches!(
             dm.device_rename(&name, &DevId::Name(&name)),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
         );
 
         dm.device_remove(&DevId::Name(&name), DmOptions::default())
@@ -966,7 +944,7 @@ mod tests {
 
         assert_matches!(
             dm.device_info(&DevId::Name(&name)),
-            Err(DmError::Core(Error::Ioctl(_, _, _, err))) if *err == nix::errno::Errno::ENXIO
+            Err(DmError::Ioctl(_, _, _, err)) if *err == nix::errno::Errno::ENXIO
         );
 
         assert_matches!(dm.device_info(&DevId::Name(&new_name)), Ok(_));
@@ -986,7 +964,7 @@ mod tests {
 
         assert_matches!(
             dm.device_rename(&new_name, &DevId::Name(&third_name)),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
         );
 
         dm.device_remove(&DevId::Name(&third_name), DmOptions::default())
@@ -1004,7 +982,7 @@ mod tests {
                 &test_name("old_name").expect("is valid DM name"),
                 &DevId::Name(&new_name)
             ),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_RENAME_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_RENAME_CMD as u8
         );
     }
 
@@ -1016,7 +994,7 @@ mod tests {
                 &DevId::Name(&test_name("junk").expect("is valid DM name")),
                 DmOptions::default()
             ),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_REMOVE_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_REMOVE_CMD as u8
         );
     }
 
@@ -1043,7 +1021,7 @@ mod tests {
                 &DevId::Name(&test_name("junk").expect("is valid DM name")),
                 DmOptions::default()
             ),
-            Err(DmError::Core(Error::Ioctl(_, _, _, err))) if *err == nix::errno::Errno::ENXIO
+            Err(DmError::Ioctl(_, _, _, err)) if *err == nix::errno::Errno::ENXIO
         );
     }
 
@@ -1056,7 +1034,7 @@ mod tests {
                 &DevId::Name(&name),
                 DmOptions::default().set_flags(DmFlags::DM_STATUS_TABLE)
             ),
-            Err(DmError::Core(Error::Ioctl(_, _, _, err))) if *err == nix::errno::Errno::ENXIO
+            Err(DmError::Ioctl(_, _, _, err)) if *err == nix::errno::Errno::ENXIO
         );
     }
 
@@ -1088,7 +1066,7 @@ mod tests {
         let name = test_name("example_dev").expect("is valid DM name");
         assert_matches!(
             DM::new().unwrap().device_info(&DevId::Name(&name)),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_STATUS_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_STATUS_CMD as u8
         );
     }
 
@@ -1107,19 +1085,19 @@ mod tests {
             .unwrap();
         assert_matches!(
             dm.device_create(&name, Some(&uuid), DmOptions::default()),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
         );
         assert_matches!(
             dm.device_create(&name, None, DmOptions::default()),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
         );
         assert_matches!(
             dm.device_create(&name, Some(&uuid_alt), DmOptions::default()),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
         );
         assert_matches!(
             dm.device_create(&name_alt, Some(&uuid), DmOptions::default()),
-            Err(DmError::Core(Error::Ioctl(op, _, _, err))) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+            Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
         );
         dm.device_remove(&DevId::Name(&name), DmOptions::default())
             .unwrap();

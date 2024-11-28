@@ -4,13 +4,10 @@
 
 //! Modules that support testing.
 
-mod logger;
-mod loopbacked;
-mod test_lib;
+#[macro_use]
+mod range_macros;
 
-pub use self::{
-    loopbacked::test_with_spec,
-    test_lib::{
-        blkdev_size, test_name, test_string, test_uuid, udev_settle, xfs_create_fs, xfs_set_uuid,
-    },
-};
+mod test_lib;
+pub use test_lib::{test_name, test_uuid};
+
+mod units;

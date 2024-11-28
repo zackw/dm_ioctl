@@ -5,7 +5,7 @@
 // An omnibus macro that includes all simple macros.
 macro_rules! range_u64 {
     ( $(#[$comment:meta])? $T: ident, $display_name: expr) => {
-        range!($(#[$comment])? $T, $display_name, u64, serialize_u64);
+        range!($(#[$comment])? $T, $display_name, u64);
         from_u64!($T);
         mul!($T, u64, u32, u16, u8);
         div!($T, u64, u32, u16, u8);
@@ -14,7 +14,7 @@ macro_rules! range_u64 {
 
 macro_rules! range_u128 {
     ( $(#[$comment:meta])? $T: ident, $display_name: expr) => {
-        range!($(#[$comment])? $T, $display_name, u128, serialize_u128);
+        range!($(#[$comment])? $T, $display_name, u128);
         from_u128!($T);
         mul!($T, u128, u64, u32, u16, u8);
         div!($T, u128, u64, u32, u16, u8);
@@ -22,7 +22,7 @@ macro_rules! range_u128 {
 }
 
 macro_rules! range {
-    ( $(#[$comment:meta])? $T: ident, $display_name: expr, $inner:ty, $serde_method:ident) => {
+    ( $(#[$comment:meta])? $T: ident, $display_name: expr, $inner:ty) => {
         $(
             #[$comment]
         )?
@@ -32,7 +32,6 @@ macro_rules! range {
         checked_add!($T);
         debug_macro!($T);
         display!($T, $display_name);
-        serde_macro!($T, $serde_method);
         sum!($T);
         add!($T);
         add_assign!($T);
@@ -148,28 +147,6 @@ macro_rules! display {
         impl std::fmt::Display for $T {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(f, "{} {}", self.0, $display_name)
-            }
-        }
-    };
-}
-
-macro_rules! serde_macro {
-    ($T:ident, $serde_method:ident) => {
-        impl serde::Serialize for $T {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where
-                S: serde::Serializer,
-            {
-                serializer.$serde_method(**self)
-            }
-        }
-
-        impl<'de> serde::Deserialize<'de> for $T {
-            fn deserialize<D>(deserializer: D) -> Result<$T, D::Error>
-            where
-                D: serde::de::Deserializer<'de>,
-            {
-                Ok($T(serde::Deserialize::deserialize(deserializer)?))
             }
         }
     };

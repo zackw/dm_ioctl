@@ -6,14 +6,12 @@ use nix::libc::c_char;
 use semver::Version;
 
 use crate::{
-    core::{
-        device::Device,
-        dm_flags::DmFlags,
-        dm_ioctl as dmi, errors,
-        types::{DmName, DmNameBuf, DmUuid, DmUuidBuf},
-        util::str_from_c_str,
-    },
-    result::{DmError, DmResult},
+    device::Device,
+    dm_flags::DmFlags,
+    dm_ioctl as dmi,
+    errors::{DmError, DmResult},
+    types::{DmName, DmNameBuf, DmUuid, DmUuidBuf},
+    util::str_from_c_str,
 };
 
 /// Contains information about the device.
@@ -42,7 +40,7 @@ impl TryFrom<dmi::Struct_dm_ioctl> for DeviceInfo {
 
     fn try_from(ioctl: dmi::Struct_dm_ioctl) -> DmResult<Self> {
         let uuid = str_from_c_str(&ioctl.uuid as &[c_char]).ok_or_else(|| {
-            errors::Error::InvalidArgument("Devicemapper UUID is not null terminated".to_string())
+            DmError::InvalidArgument("Devicemapper UUID is not null terminated".to_string())
         })?;
         let uuid = if uuid.is_empty() {
             None
@@ -50,7 +48,7 @@ impl TryFrom<dmi::Struct_dm_ioctl> for DeviceInfo {
             Some(DmUuidBuf::new(uuid.to_string())?)
         };
         let name = str_from_c_str(&ioctl.name as &[c_char]).ok_or_else(|| {
-            errors::Error::InvalidArgument("Devicemapper name is not null terminated".to_string())
+            DmError::InvalidArgument("Devicemapper name is not null terminated".to_string())
         })?;
         let name = if name.is_empty() {
             None

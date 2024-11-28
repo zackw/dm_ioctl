@@ -6,11 +6,11 @@
 
 use std::{self, path::PathBuf};
 
-use crate::core::deviceinfo::DeviceInfo;
+use crate::deviceinfo::DeviceInfo;
 
 #[derive(Clone, Debug)]
 /// Internal error for low-level devicemapper operations
-pub enum Error {
+pub enum DmError {
     /// An error returned on failure to create a devicemapper context
     ContextInit(String),
 
@@ -44,43 +44,46 @@ pub enum Error {
     UdevSync(String),
 }
 
-impl std::fmt::Display for Error {
+impl std::fmt::Display for DmError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ContextInit(err) => {
+            Self::ContextInit(err) => {
                 write!(f, "DM context not initialized due to IO error: {err}")
             }
-            Error::InvalidArgument(err) => write!(f, "invalid argument: {err}"),
-            Error::Ioctl(op, hdr_in, hdr_out, err) => write!(
+            Self::InvalidArgument(err) => write!(f, "invalid argument: {err}"),
+            Self::Ioctl(op, hdr_in, hdr_out, err) => write!(
                 f,
                 "low-level ioctl error due to nix error; ioctl number: {op}, input header: {hdr_in:?}, header result: {hdr_out:?}, error: {err}"
             ),
-            Error::IoctlResultTooLarge => write!(
+            Self::IoctlResultTooLarge => write!(
                 f,
                 "ioctl result too large for maximum buffer size: {} bytes",
                 u32::MAX
             ),
-            Error::MetadataIo(device_path, err) => write!(
+            Self::MetadataIo(device_path, err) => write!(
                 f,
                 "failed to stat metadata for device at {} due to IO error: {}",
                 device_path.display(),
                 err
             ),
-            Error::GeneralIo(err) => {
+            Self::GeneralIo(err) => {
                 write!(f, "failed to perform operation due to IO error: {err}")
             }
-            Error::UdevSync(err) => {
+            Self::UdevSync(err) => {
                 write!(f, "failed to perform udev sync operation: {}", err)
             }
         }
     }
 }
 
-impl std::error::Error for Error {
+impl std::error::Error for DmError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Error::Ioctl(_, _, _, err) => Some(err),
+            Self::Ioctl(_, _, _, err) => Some(err),
             _ => None,
         }
     }
 }
+
+/// Result specialization for DM functions.
+pub type DmResult<S> = Result<S, DmError>;
