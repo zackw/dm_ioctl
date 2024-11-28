@@ -10,9 +10,7 @@ mod dm;
 mod dm_flags;
 mod dm_ioctl;
 mod dm_options;
-mod dm_udev_sync;
 pub mod errors;
-mod sysvsem;
 mod types;
 mod util;
 

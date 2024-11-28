@@ -7,7 +7,7 @@ use crate::core::dm_ioctl as dmi;
 bitflags! {
     /// Flags used by devicemapper.
     #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-    pub struct DmFlags: dmi::__u32 {
+    pub struct DmFlags: u32 {
         /// In: Device should be read-only.
         /// Out: Device is read-only.
         const DM_READONLY             = dmi::DM_READONLY_FLAG;
