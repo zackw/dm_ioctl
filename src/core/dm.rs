@@ -62,7 +62,7 @@ impl DmOptions {
     ) -> DmResult<dmi::Struct_dm_ioctl> {
         let clean_flags = allowable_flags & self.flags();
         let event_nr = self.udev_flags().bits() << dmi::DM_UDEV_FLAGS_SHIFT;
-        let mut hdr: dmi::Struct_dm_ioctl = devicemapper_sys::dm_ioctl {
+        let mut hdr: dmi::Struct_dm_ioctl = crate::sys::dm_ioctl {
             flags: clean_flags.bits(),
             event_nr,
             data_start: size_of::<dmi::Struct_dm_ioctl>() as u32,
@@ -703,7 +703,6 @@ impl DM {
 
     /// Returns a list of each loaded target type with its name, and
     /// version broken into major, minor, and patchlevel.
-    #[cfg(devicemapper41supported)]
     pub fn list_versions(&self) -> DmResult<Vec<(String, u32, u32, u32)>> {
         let mut hdr = DmOptions::default().to_ioctl_hdr(None, DmFlags::empty())?;
 
@@ -742,7 +741,6 @@ impl DM {
     /// Send a message to the device specified by id and the sector
     /// specified by sector. If sending to the whole device, set sector to
     /// None.
-    #[cfg(devicemapper42supported)]
     pub fn target_msg(
         &self,
         id: &DevId<'_>,
@@ -787,7 +785,6 @@ impl DM {
     /// If DM is being used to poll for events, once it indicates readiness it
     /// will continue to do so until we rearm it, which is what this method
     /// does.
-    #[cfg(devicemapper437supported)]
     pub fn arm_poll(&self) -> DmResult<DeviceInfo> {
         let mut hdr = DmOptions::default().to_ioctl_hdr(None, DmFlags::empty())?;
 

@@ -35,14 +35,6 @@ tempfile = "3.4.0"
 version = "1.0.0"
 features = ["v4"]
 
-[dependencies.devicemapper-sys]
-version = "0.3.0"
-path = "./devicemapper-rs-sys"
-
-[build-dependencies.devicemapper-sys]
-version = "0.3.0"
-path = "./devicemapper-rs-sys"
-
 [build-dependencies]
 semver = "1.0.0"
 
@@ -52,15 +44,8 @@ future_incompatible = { level = "deny", priority = 1 }
 unused = { level = "deny", priority = 2}
 rust_2018_idioms = { level = "deny", priority = 3 }
 nonstandard_style = { level = "deny", priority = 4 }
-unexpected_cfgs = { level = "deny", check-cfg = [
-  'cfg(devicemapper41supported)',
-  'cfg(devicemapper42supported)',
-  'cfg(devicemapper437supported)',
-  'cfg(devicemapper441supported)',
-  'cfg(devicemapper46supported)'
-] }
 
 [lints.clippy]
 all = { level = "deny" }
-cargo = { level = "deny" , priority = 1}
+cargo = { level = "deny", priority = 1}
 multiple-crate-versions = { level = "allow", priority = 2 }

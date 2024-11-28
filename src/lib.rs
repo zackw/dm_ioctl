@@ -93,6 +93,8 @@ mod lineardev;
 mod result;
 /// functionality shared between devices
 mod shared;
+/// the raw ioctl interface
+mod sys;
 /// allocate a device from a pool
 mod thindev;
 /// the id the pool uses to track its devices

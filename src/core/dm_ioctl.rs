@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-pub use devicemapper_sys::{
+pub use crate::sys::{
     dm_ioctl as Struct_dm_ioctl, dm_name_list as Struct_dm_name_list,
     dm_target_deps as Struct_dm_target_deps, dm_target_msg as Struct_dm_target_msg,
     dm_target_spec as Struct_dm_target_spec, dm_target_versions as Struct_dm_target_versions, *,
@@ -30,17 +30,12 @@ static IOCTL_VERSIONS: Lazy<HashMap<u32, (u32, u32, u32)>> = Lazy::new(|| {
         (DM_TABLE_CLEAR_CMD, (4, 0, 0)),
         (DM_TABLE_DEPS_CMD, (4, 0, 0)),
         (DM_TABLE_STATUS_CMD, (4, 0, 0)),
-        #[cfg(devicemapper41supported)]
         (DM_LIST_VERSIONS_CMD, (4, 1, 0)),
-        #[cfg(devicemapper42supported)]
         (DM_TARGET_MSG_CMD, (4, 2, 0)),
-        #[cfg(devicemapper46supported)]
         (DM_DEV_SET_GEOMETRY_CMD, (4, 6, 0)),
         // libdevmapper sets DM_DEV_ARM_POLL to (4, 36, 0) however the command was
         // added after 4.36.0: depend on 4.37 to reliably access ARM_POLL.
-        #[cfg(devicemapper437supported)]
         (DM_DEV_ARM_POLL_CMD, (4, 37, 0)),
-        #[cfg(devicemapper441supported)]
         (DM_GET_TARGET_VERSION_CMD, (4, 41, 0)),
     ])
 });

@@ -1,8 +1,3 @@
-ifeq ($(origin FEDORA_RELEASE), undefined)
-else
-  FEDORA_RELEASE_ARGS = --release=${FEDORA_RELEASE}
-endif
-
 ifeq ($(origin MANIFEST_PATH), undefined)
 else
   MANIFEST_PATH_ARGS = --manifest-path=${MANIFEST_PATH}
@@ -32,20 +27,11 @@ verify-dependency-bounds: test-set-lower-bounds
 	${SET_LOWER_BOUNDS} ${MANIFEST_PATH_ARGS}
 	cargo build ${MANIFEST_PATH_ARGS}
 
-test-compare-fedora-versions:
-	echo "Testing that COMPARE_FEDORA_VERSIONS environment variable is set to a valid path"
-	test -e "${COMPARE_FEDORA_VERSIONS}"
-
-check-fedora-versions: test-compare-fedora-versions
-	${COMPARE_FEDORA_VERSIONS} ${MANIFEST_PATH_ARGS} ${FEDORA_RELEASE_ARGS} ${IGNORE_ARGS}
-
 fmt:
 	cargo fmt
-	cd devicemapper-rs-sys && cargo fmt
 
 fmt-ci:
 	cargo fmt -- --check
-	cd devicemapper-rs-sys && cargo fmt -- --check
 
 build:
 	cargo build
@@ -61,7 +47,6 @@ sudo_test:
 
 clippy:
 	cargo clippy --all-features ${CLIPPY_OPTS}
-	(cd devicemapper-rs-sys && cargo clippy --all-features ${CLIPPY_OPTS})
 
 docs:
 	cargo doc --no-deps
@@ -72,8 +57,6 @@ yamllint:
 .PHONY:
 	audit
 	build
-	check-fedora-versions
-	check-fedora-versions-sys
 	check-typos
 	clippy
 	docs
@@ -81,7 +64,6 @@ yamllint:
 	fmt-ci
 	sudo_test
 	test
-	test-compare-fedora-versions
 	test-set-lower-bounds
 	verify-dependency-bounds
 	yamllint

@@ -1,3 +1,9 @@
+mini-devicemapper 0.40.0
+========================
+
+- no longer uses bindgen
+- devicemapper-rs-sys has been folded into the main crate
+
 devicemapper 0.34.4
 ===================
 Recommended Rust toolchain version: 1.80.1

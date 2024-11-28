@@ -10,7 +10,7 @@
 //! shipped with Linux 6.6.62, which identifies itself as API version
 //! "4.48.0-ioctl (2023-03-01)", and then manually cleaned up.
 
-#![no_std]
+#![allow(dead_code)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(clippy::missing_safety_doc)]
@@ -231,7 +231,7 @@ pub const DM_DEV_ARM_POLL_CMD: c_uint = 16;
 pub const DM_GET_TARGET_VERSION_CMD: c_uint = 17;
 
 /* ZW: additional flags from libdevmapper.h; only those that are actually
-   used; to be removed */
+used; to be removed */
 pub const DM_UDEV_FLAGS_SHIFT: u32 = 16;
 pub const DM_UDEV_DISABLE_DM_RULES_FLAG: u32 = 1;
 pub const DM_UDEV_DISABLE_SUBSYSTEM_RULES_FLAG: u32 = 2;
@@ -388,7 +388,6 @@ pub struct dm_name_list {
 
     /// ???
     pub name: FlexibleArrayMember<c_char>,
-
     /* The following members can be accessed by taking a pointer that
        points immediately after the terminating zero character in "name"
        and aligning this pointer to next 8-byte boundary.
