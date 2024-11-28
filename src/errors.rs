@@ -39,9 +39,6 @@ pub enum DmError {
 
     /// An error returned on general IO failure
     GeneralIo(String),
-
-    /// An error synchronizing with udev
-    UdevSync(String),
 }
 
 impl std::fmt::Display for DmError {
@@ -68,9 +65,6 @@ impl std::fmt::Display for DmError {
             ),
             Self::GeneralIo(err) => {
                 write!(f, "failed to perform operation due to IO error: {err}")
-            }
-            Self::UdevSync(err) => {
-                write!(f, "failed to perform udev sync operation: {}", err)
             }
         }
     }

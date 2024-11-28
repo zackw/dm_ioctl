@@ -49,28 +49,3 @@ bitflags! {
         const DM_INTERNAL_SUSPEND     = dmi::DM_INTERNAL_SUSPEND_FLAG;
     }
 }
-
-bitflags! {
-    /// Flags used by devicemapper, see:
-    /// https://sourceware.org/git/?p=lvm2.git;a=blob;f=libdm/libdevmapper.h#l3627
-    /// for complete information about the meaning of the flags.
-    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-    pub struct DmUdevFlags: u32 {
-        /// Disables basic device-mapper udev rules that create symlinks in /dev/<DM_DIR>
-        /// directory.
-        const DM_UDEV_DISABLE_DM_RULES_FLAG = dmi::DM_UDEV_DISABLE_DM_RULES_FLAG;
-        /// Disable subsystem udev rules, but allow general DM udev rules to run.
-        const DM_UDEV_DISABLE_SUBSYSTEM_RULES_FLAG = dmi::DM_UDEV_DISABLE_SUBSYSTEM_RULES_FLAG;
-        /// Disable dm udev rules which create symlinks in /dev/disk/* directory.
-        const DM_UDEV_DISABLE_DISK_RULES_FLAG = dmi::DM_UDEV_DISABLE_DISK_RULES_FLAG;
-        /// Disable all rules that are not general dm nor subsystem related.
-        const DM_UDEV_DISABLE_OTHER_RULES_FLAG = dmi::DM_UDEV_DISABLE_OTHER_RULES_FLAG;
-        /// Instruct udev rules to give lower priority to the device.
-        const DM_UDEV_LOW_PRIORITY_FLAG = dmi::DM_UDEV_LOW_PRIORITY_FLAG;
-        /// Disable libdevmapper's node management.
-        const DM_UDEV_DISABLE_LIBRARY_FALLBACK = dmi::DM_UDEV_DISABLE_LIBRARY_FALLBACK;
-        /// Automatically appended to all IOCTL calls issues by libdevmapper for generating
-        /// udev uevents.
-        const DM_UDEV_PRIMARY_SOURCE_FLAG = dmi::DM_UDEV_PRIMARY_SOURCE_FLAG;
-    }
-}

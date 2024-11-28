@@ -4,6 +4,12 @@ mini-devicemapper 0.40.0
 - The high-level interface (CacheDev, LinearDev, ThinDev, etc) has
   been removed.  Only the lower level DM interface remains.
 
+- Udev integration has been removed.  The library will not wait for
+  udev to do anything, nor will it manipulate the flag bits that are
+  only relevant to udev.  As a consequence, the DmOptions struct no
+  longer exists; various APIs that used it now directly work with
+  DmFlags.
+
 - no longer uses bindgen
 - no longer depends on env_logger, rand, or serde
 - devicemapper-rs-sys has been folded into the main crate

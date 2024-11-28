@@ -53,7 +53,7 @@ impl<T> fmt::Debug for FlexibleArrayMember<T> {
         fmt.write_str("FlexibleArrayMember")
     }
 }
-pub const DM_UDEV_DEV_DIR: &[u8; 6] = b"/dev/\0";
+
 pub const DM_DIR: &[u8; 7] = b"mapper\0";
 pub const DM_CONTROL_NODE: &[u8; 8] = b"control\0";
 
@@ -230,17 +230,6 @@ pub const DM_DEV_ARM_POLL_CMD: c_uint = 16;
 /// ???
 pub const DM_GET_TARGET_VERSION_CMD: c_uint = 17;
 
-/* ZW: additional flags from libdevmapper.h; only those that are actually
-used; to be removed */
-pub const DM_UDEV_FLAGS_SHIFT: u32 = 16;
-pub const DM_UDEV_DISABLE_DM_RULES_FLAG: u32 = 1;
-pub const DM_UDEV_DISABLE_SUBSYSTEM_RULES_FLAG: u32 = 2;
-pub const DM_UDEV_DISABLE_DISK_RULES_FLAG: u32 = 4;
-pub const DM_UDEV_DISABLE_OTHER_RULES_FLAG: u32 = 8;
-pub const DM_UDEV_LOW_PRIORITY_FLAG: u32 = 16;
-pub const DM_UDEV_DISABLE_LIBRARY_FALLBACK: u32 = 32;
-pub const DM_UDEV_PRIMARY_SOURCE_FLAG: u32 = 64;
-
 /// All ioctl arguments consist of a single chunk of memory,
 /// with this structure at the start.  If a uuid is specified
 /// any lookup (eg. for a DM_INFO) will be done on that, *not* the name.
@@ -278,7 +267,7 @@ pub struct dm_ioctl {
     pub flags: c_uint,
 
     /// event_nr holds either the event number (input and output) or the
-    /// udev cookie value (input only).
+    /// uevent cookie value (input only).
     /// The DM_DEV_WAIT ioctl takes an event number as input.
     /// The DM_SUSPEND, DM_DEV_REMOVE and DM_DEV_RENAME ioctls
     /// use the field as a cookie to return in the DM_COOKIE

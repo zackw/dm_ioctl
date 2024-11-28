@@ -74,28 +74,34 @@ extern crate nix;
 #[macro_use]
 extern crate assert_matches;
 
+// Internal-only modules
+
 #[macro_use]
 mod id_macros;
 
-mod device;
-mod deviceinfo;
-mod dm;
-mod dm_flags;
 mod dm_ioctl;
-mod dm_options;
-pub mod errors;
 mod sys;
-mod types;
 mod util;
 
 #[cfg(test)]
 mod testing;
 
-pub use self::{
-    device::{devnode_to_devno, Device},
-    deviceinfo::DeviceInfo,
-    dm::DM,
-    dm_flags::{DmFlags, DmUdevFlags},
-    dm_options::DmOptions,
-    types::{DevId, DmName, DmNameBuf, DmUuid, DmUuidBuf},
-};
+// Modules that define public interfaces
+
+mod device;
+pub use device::{devnode_to_devno, Device};
+
+mod deviceinfo;
+pub use deviceinfo::DeviceInfo;
+
+mod dm;
+pub use dm::DM;
+
+mod dm_flags;
+pub use dm_flags::DmFlags;
+
+pub mod errors;
+pub use errors::{DmError, DmResult};
+
+mod types;
+pub use types::{DevId, DmName, DmNameBuf, DmUuid, DmUuidBuf};
