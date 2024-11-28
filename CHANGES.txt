@@ -10,8 +10,14 @@ mini-devicemapper 0.40.0
   longer exists; various APIs that used it now directly work with
   DmFlags.
 
+- Internal debug logging has been removed as inappropriate for what
+  is now really just a thin wrapper around the kernel interface.
+
+- DM::device_remove() no longer retries the operation on EBUSY.
+  Do that yourself if you need to.
+
 - no longer uses bindgen
-- no longer depends on env_logger, rand, or serde
+- no longer depends on env_logger, log, rand, retry, or serde
 - devicemapper-rs-sys has been folded into the main crate
 
 devicemapper 0.34.4
