@@ -4,7 +4,6 @@
 
 use std::{fmt, path::Path, str::FromStr};
 
-use cfg_if::cfg_if;
 use nix::libc::{dev_t, major, makedev, minor};
 use nix::sys::stat::{self, SFlag};
 
@@ -59,12 +58,8 @@ impl FromStr for Device {
 impl From<dev_t> for Device {
     fn from(val: dev_t) -> Device {
         let major = unsafe { major(val) };
-        #[cfg(target_os = "android")]
-        let major = major as u32;
 
         let minor = unsafe { minor(val) };
-        #[cfg(target_os = "android")]
-        let minor = minor as u32;
 
         Device { major, minor }
     }
@@ -72,22 +67,7 @@ impl From<dev_t> for Device {
 
 impl From<Device> for dev_t {
     fn from(dev: Device) -> dev_t {
-        cfg_if! {
-            if #[cfg(target_os = "android")] {
-                // dev.major, dev.minor u32 in libc 0.2.133
-                #[allow(clippy::useless_conversion)]
-                makedev(
-                    dev.major
-                        .try_into()
-                        .expect("value is smaller than max positive i32"),
-                    dev.minor
-                        .try_into()
-                        .expect("value is smaller than max positive i32"),
-                )
-            } else {
-                makedev(dev.major, dev.minor)
-            }
-        }
+        makedev(dev.major, dev.minor)
     }
 }
 

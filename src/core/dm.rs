@@ -32,12 +32,8 @@ use crate::{
     result::{DmError, DmResult, ErrorEnum},
 };
 
-#[cfg(target_os = "linux")]
 /// Control path for user space to pass IOCTL to kernel DM
 const DM_CTL_PATH: &str = "/dev/mapper/control";
-#[cfg(target_os = "android")]
-/// Control path for user space to pass IOCTL to kernel DM
-const DM_CTL_PATH: &str = "/dev/device-mapper";
 
 /// Start with a large buffer to make BUFFER_FULL rare. Libdm does this too.
 const MIN_BUF_SIZE: usize = 16 * 1024;
@@ -119,8 +115,6 @@ impl DM {
         in_data: Option<&[u8]>,
     ) -> DmResult<(DeviceInfo, Vec<u8>)> {
         let op = request_code_readwrite!(dmi::DM_IOCTL, ioctl, size_of::<dmi::Struct_dm_ioctl>());
-        #[cfg(target_os = "android")]
-        let op = op as i32;
 
         let ioctl_version = dmi::ioctl_to_version(ioctl);
         hdr.version[0] = ioctl_version.0;
