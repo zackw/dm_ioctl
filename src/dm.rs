@@ -97,7 +97,7 @@ impl DM {
     // Set the required DM version to the lowest that supports the given ioctl.
     fn do_ioctl(
         &self,
-        ioctl: u8,
+        ioctl: dmi::DmIoctlCmd,
         hdr: &mut dmi::Struct_dm_ioctl,
         in_data: Option<&[u8]>,
     ) -> DmResult<(DeviceInfo, Vec<u8>)> {
@@ -172,7 +172,7 @@ impl DM {
     pub fn version(&self) -> DmResult<(u32, u32, u32)> {
         let mut hdr = DmFlags::default().to_ioctl_hdr(None, DmFlags::empty())?;
 
-        let (hdr_out, _) = self.do_ioctl(dmi::DM_VERSION_CMD as u8, &mut hdr, None)?;
+        let (hdr_out, _) = self.do_ioctl(dmi::DM_VERSION_CMD, &mut hdr, None)?;
 
         Ok((
             hdr_out
@@ -203,7 +203,7 @@ impl DM {
     pub fn remove_all(&self, flags: DmFlags) -> DmResult<()> {
         let mut hdr = flags.to_ioctl_hdr(None, DmFlags::DM_DEFERRED_REMOVE)?;
 
-        self.do_ioctl(dmi::DM_REMOVE_ALL_CMD as u8, &mut hdr, None)?;
+        self.do_ioctl(dmi::DM_REMOVE_ALL_CMD, &mut hdr, None)?;
 
         Ok(())
     }
@@ -213,7 +213,7 @@ impl DM {
     /// support it, each device's last event_nr.
     pub fn list_devices(&self) -> DmResult<Vec<(DmNameBuf, Device, Option<u32>)>> {
         let mut hdr = DmFlags::default().to_ioctl_hdr(None, DmFlags::empty())?;
-        let (hdr_out, data_out) = self.do_ioctl(dmi::DM_LIST_DEVICES_CMD as u8, &mut hdr, None)?;
+        let (hdr_out, data_out) = self.do_ioctl(dmi::DM_LIST_DEVICES_CMD, &mut hdr, None)?;
 
         let event_nr_set = hdr_out.version() >= &Version::new(4, 37, 0);
 
@@ -300,7 +300,7 @@ impl DM {
             Self::hdr_set_uuid(&mut hdr, uuid)?;
         }
 
-        self.do_ioctl(dmi::DM_DEV_CREATE_CMD as u8, &mut hdr, None)
+        self.do_ioctl(dmi::DM_DEV_CREATE_CMD, &mut hdr, None)
             .map(|(hdr, _)| hdr)
     }
 
@@ -313,7 +313,7 @@ impl DM {
     /// Valid flags: `DM_DEFERRED_REMOVE`
     pub fn device_remove(&self, id: &DevId<'_>, flags: DmFlags) -> DmResult<DeviceInfo> {
         let mut hdr = flags.to_ioctl_hdr(Some(id), DmFlags::DM_DEFERRED_REMOVE)?;
-        self.do_ioctl(dmi::DM_DEV_REMOVE_CMD as u8, &mut hdr, None)
+        self.do_ioctl(dmi::DM_DEV_REMOVE_CMD, &mut hdr, None)
             .map(|(hdr, _)| hdr)
     }
 
@@ -335,7 +335,7 @@ impl DM {
         let mut hdr = flags.to_ioctl_hdr(None, DmFlags::DM_UUID)?;
         Self::hdr_set_name(&mut hdr, old_name)?;
 
-        self.do_ioctl(dmi::DM_DEV_RENAME_CMD as u8, &mut hdr, Some(&data_in))
+        self.do_ioctl(dmi::DM_DEV_RENAME_CMD, &mut hdr, Some(&data_in))
             .map(|(hdr, _)| hdr)
     }
 
@@ -368,7 +368,7 @@ impl DM {
             DmFlags::DM_SUSPEND | DmFlags::DM_NOFLUSH | DmFlags::DM_SKIP_LOCKFS,
         )?;
 
-        self.do_ioctl(dmi::DM_DEV_SUSPEND_CMD as u8, &mut hdr, None)
+        self.do_ioctl(dmi::DM_DEV_SUSPEND_CMD, &mut hdr, None)
             .map(|(hdr, _)| hdr)
     }
 
@@ -378,7 +378,7 @@ impl DM {
     pub fn device_info(&self, id: &DevId<'_>) -> DmResult<DeviceInfo> {
         let mut hdr = DmFlags::default().to_ioctl_hdr(Some(id), DmFlags::empty())?;
 
-        self.do_ioctl(dmi::DM_DEV_STATUS_CMD as u8, &mut hdr, None)
+        self.do_ioctl(dmi::DM_DEV_STATUS_CMD, &mut hdr, None)
             .map(|(hdr, _)| hdr)
     }
 
@@ -397,7 +397,7 @@ impl DM {
     ) -> DmResult<(DeviceInfo, Vec<(u64, u64, String, String)>)> {
         let mut hdr = flags.to_ioctl_hdr(Some(id), DmFlags::DM_QUERY_INACTIVE_TABLE)?;
 
-        let (hdr_out, data_out) = self.do_ioctl(dmi::DM_DEV_WAIT_CMD as u8, &mut hdr, None)?;
+        let (hdr_out, data_out) = self.do_ioctl(dmi::DM_DEV_WAIT_CMD, &mut hdr, None)?;
 
         let status = DM::parse_table_status(hdr.target_count, &data_out)?;
 
@@ -484,7 +484,7 @@ impl DM {
         // Flatten targets into a buf
         let data_in = cursor.into_inner();
 
-        self.do_ioctl(dmi::DM_TABLE_LOAD_CMD as u8, &mut hdr, Some(&data_in))
+        self.do_ioctl(dmi::DM_TABLE_LOAD_CMD, &mut hdr, Some(&data_in))
             .map(|(hdr, _)| hdr)
     }
 
@@ -492,7 +492,7 @@ impl DM {
     pub fn table_clear(&self, id: &DevId<'_>) -> DmResult<DeviceInfo> {
         let mut hdr = DmFlags::default().to_ioctl_hdr(Some(id), DmFlags::empty())?;
 
-        self.do_ioctl(dmi::DM_TABLE_CLEAR_CMD as u8, &mut hdr, None)
+        self.do_ioctl(dmi::DM_TABLE_CLEAR_CMD, &mut hdr, None)
             .map(|(hdr, _)| hdr)
     }
 
@@ -506,7 +506,7 @@ impl DM {
     pub fn table_deps(&self, id: &DevId<'_>, flags: DmFlags) -> DmResult<Vec<Device>> {
         let mut hdr = flags.to_ioctl_hdr(Some(id), DmFlags::DM_QUERY_INACTIVE_TABLE)?;
 
-        let (_, data_out) = self.do_ioctl(dmi::DM_TABLE_DEPS_CMD as u8, &mut hdr, None)?;
+        let (_, data_out) = self.do_ioctl(dmi::DM_TABLE_DEPS_CMD, &mut hdr, None)?;
 
         if data_out.is_empty() {
             Ok(vec![])
@@ -609,7 +609,7 @@ impl DM {
             DmFlags::DM_NOFLUSH | DmFlags::DM_STATUS_TABLE | DmFlags::DM_QUERY_INACTIVE_TABLE,
         )?;
 
-        let (hdr_out, data_out) = self.do_ioctl(dmi::DM_TABLE_STATUS_CMD as u8, &mut hdr, None)?;
+        let (hdr_out, data_out) = self.do_ioctl(dmi::DM_TABLE_STATUS_CMD, &mut hdr, None)?;
 
         let status = DM::parse_table_status(hdr_out.target_count, &data_out)?;
 
@@ -621,7 +621,7 @@ impl DM {
     pub fn list_versions(&self) -> DmResult<Vec<(String, u32, u32, u32)>> {
         let mut hdr = DmFlags::default().to_ioctl_hdr(None, DmFlags::empty())?;
 
-        let (_, data_out) = self.do_ioctl(dmi::DM_LIST_VERSIONS_CMD as u8, &mut hdr, None)?;
+        let (_, data_out) = self.do_ioctl(dmi::DM_LIST_VERSIONS_CMD, &mut hdr, None)?;
 
         let mut targets = Vec::new();
         if !data_out.is_empty() {
@@ -675,7 +675,7 @@ impl DM {
         data_in.push(b'\0');
 
         let (hdr_out, data_out) =
-            self.do_ioctl(dmi::DM_TARGET_MSG_CMD as u8, &mut hdr, Some(&data_in))?;
+            self.do_ioctl(dmi::DM_TARGET_MSG_CMD, &mut hdr, Some(&data_in))?;
 
         let output = if (hdr_out.flags().bits() & DmFlags::DM_DATA_OUT.bits()) > 0 {
             Some(
@@ -697,7 +697,7 @@ impl DM {
     pub fn arm_poll(&self) -> DmResult<DeviceInfo> {
         let mut hdr = DmFlags::default().to_ioctl_hdr(None, DmFlags::empty())?;
 
-        self.do_ioctl(dmi::DM_DEV_ARM_POLL_CMD as u8, &mut hdr, None)
+        self.do_ioctl(dmi::DM_DEV_ARM_POLL_CMD, &mut hdr, None)
             .map(|(hdr, _)| hdr)
     }
 }
