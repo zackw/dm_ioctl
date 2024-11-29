@@ -27,10 +27,6 @@ use crate::{
     },
 };
 
-#[cfg(test)]
-#[path = "tests/dm.rs"]
-mod tests;
-
 /// Control path for user space to pass IOCTL to kernel DM
 const DM_CTL_PATH: &str = "/dev/mapper/control";
 

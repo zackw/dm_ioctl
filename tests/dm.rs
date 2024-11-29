@@ -2,14 +2,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-//! Unit tests for crate::dm.
+//! Integration tests for mini-devicemapper.
+//! These tests require root privileges and cannot safely be run in
+//! parallel.
 
-use crate::{
-    errors::DmError,
-    test_support::{list_test_devices, test_name, test_uuid},
-};
+#[macro_use]
+extern crate assert_matches;
 
-use super::*;
+mod support;
+use support::{list_test_devices, test_name, test_uuid};
+
+use devicemapper::DmIoctlCmd as dmi;
+use devicemapper::{DevId, DmError, DmFlags, DM};
 
 #[test]
 /// Test that some version can be obtained.

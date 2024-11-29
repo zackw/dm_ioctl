@@ -78,12 +78,7 @@ extern crate assert_matches;
 mod id_macros;
 
 mod bindings;
-mod dm_ioctl;
 mod util;
-
-#[cfg(test)]
-#[path = "tests/support.rs"]
-mod test_support;
 
 // Modules that define public interfaces
 
@@ -98,6 +93,9 @@ pub use dm::DM;
 
 mod dm_flags;
 pub use dm_flags::DmFlags;
+
+mod dm_ioctl;
+pub use dm_ioctl::DmIoctlCmd;
 
 pub mod errors;
 pub use errors::{DmError, DmResult};
