@@ -11,11 +11,23 @@ use crate::deviceinfo::DeviceInfo;
 use crate::dm_ioctl::DmIoctlCmd;
 
 #[derive(Debug)]
+#[non_exhaustive]
 /// Represents any kind of failure produced by this crate.
 pub enum DmError {
     /// Unable to create a DM context due to a system-level error,
     /// e.g. not allowed to open `/dev/mapper/control`.
     ContextInit(io::Error),
+
+    /// The empty string was provided as a device ID argument.
+    DeviceIdEmpty,
+
+    /// A device ID argument was too long.  The fields are the
+    /// length limit and the length of the argument, in that order.
+    DeviceIdTooLong(usize, usize),
+
+    /// A device ID argument contains characters that cannot be used
+    /// in device IDs.
+    DeviceIdHasBadChars,
 
     /// This is a generic error that can be returned when a method
     /// receives an invalid argument. Ideally, the argument should be
@@ -51,6 +63,15 @@ impl fmt::Display for DmError {
         match self {
             Self::ContextInit(err) => {
                 write!(f, "unable to initialize DM context: {err}")
+            }
+            Self::DeviceIdEmpty => {
+                write!(f, "device ID cannot be the empty string")
+            },
+            Self::DeviceIdTooLong(limit, actual) => {
+                write!(f, "device ID is too long ({actual} > {limit} bytes)")
+            },
+            Self::DeviceIdHasBadChars => {
+                write!(f, "device ID contains NULs or non-ASCII chars")
             }
             Self::InvalidArgument(err) => write!(f, "invalid argument: {err}"),
             Self::Ioctl(op, hdr_in, hdr_out, err) => write!(

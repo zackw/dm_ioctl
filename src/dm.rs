@@ -14,12 +14,12 @@ use nix::libc::ioctl as nix_ioctl;
 use semver::Version;
 
 use crate::{
+    dev_ids::{DevId, DmName, DmNameBuf, DmUuid},
     device::Device,
     deviceinfo::DeviceInfo,
     dm_flags::DmFlags,
     dm_ioctl as dmi,
     errors::{DmError, DmResult},
-    types::{DevId, DmName, DmNameBuf, DmUuid},
     util::{
         align_to, c_struct_from_slice, mut_slice_from_c_str, slice_from_c_struct,
         str_from_byte_slice, str_from_c_str,

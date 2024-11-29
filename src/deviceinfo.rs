@@ -6,11 +6,11 @@ use nix::libc::c_char;
 use semver::Version;
 
 use crate::{
+    dev_ids::{DmName, DmNameBuf, DmUuid, DmUuidBuf},
     device::Device,
     dm_flags::DmFlags,
     dm_ioctl as dmi,
     errors::{DmError, DmResult},
-    types::{DmName, DmNameBuf, DmUuid, DmUuidBuf},
     util::str_from_c_str,
 };
 

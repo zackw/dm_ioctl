@@ -74,9 +74,6 @@ extern crate assert_matches;
 
 // Internal-only modules
 
-#[macro_use]
-mod id_macros;
-
 mod bindings;
 mod util;
 
@@ -87,6 +84,9 @@ pub use device::Device;
 
 mod deviceinfo;
 pub use deviceinfo::DeviceInfo;
+
+mod dev_ids;
+pub use dev_ids::{DevId, DmName, DmNameBuf, DmUuid, DmUuidBuf};
 
 mod dm;
 pub use dm::DM;
@@ -99,6 +99,3 @@ pub use dm_ioctl::DmIoctlCmd;
 
 pub mod errors;
 pub use errors::{DmError, DmResult};
-
-mod types;
-pub use types::{DevId, DmName, DmNameBuf, DmUuid, DmUuidBuf};
