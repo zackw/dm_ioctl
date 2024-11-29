@@ -2,12 +2,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::{fmt, path::Path, str::FromStr};
+use std::{fmt, str::FromStr};
 
 use nix::libc::{dev_t, major, makedev, minor};
-use nix::sys::stat::{self, SFlag};
 
-use crate::errors::{DmError, DmResult};
+use crate::errors::DmError;
 
 #[cfg(test)]
 #[path = "tests/device.rs"]
@@ -90,23 +89,5 @@ impl Device {
         }
 
         Some((self.minor & 0xff) | (self.major << 8) | ((self.minor & !0xff) << 12))
-    }
-}
-
-/// Get a device number from a device node.
-/// Return None if the device is not a block device; devicemapper is not
-/// interested in other sorts of devices. Return None if the device appears
-/// not to exist.
-pub fn devnode_to_devno(path: &Path) -> DmResult<Option<u64>> {
-    match stat::stat(path) {
-        Ok(metadata) => Ok(
-            if metadata.st_mode & SFlag::S_IFMT.bits() == SFlag::S_IFBLK.bits() {
-                Some(metadata.st_rdev)
-            } else {
-                None
-            },
-        ),
-        Err(nix::Error::ENOENT) => Ok(None),
-        Err(err) => Err(DmError::MetadataIo(path.to_owned(), err.to_string())),
     }
 }

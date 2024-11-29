@@ -88,7 +88,7 @@ mod test_support;
 // Modules that define public interfaces
 
 mod device;
-pub use device::{devnode_to_devno, Device};
+pub use device::Device;
 
 mod deviceinfo;
 pub use deviceinfo::DeviceInfo;
