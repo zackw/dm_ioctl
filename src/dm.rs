@@ -67,7 +67,7 @@ impl DM {
     /// Create a new context for communicating with DM.
     pub fn new() -> DmResult<DM> {
         Ok(DM {
-            file: File::open(DM_CTL_PATH).map_err(|err| DmError::ContextInit(err.to_string()))?,
+            file: File::open(DM_CTL_PATH).map_err(DmError::ContextInit)?,
         })
     }
 
@@ -75,7 +75,7 @@ impl DM {
         let _ = name
             .as_bytes()
             .read(mut_slice_from_c_str(&mut hdr.name))
-            .map_err(|err| DmError::GeneralIo(err.to_string()))?;
+            .map_err(DmError::RequestConstruction)?;
         Ok(())
     }
 
@@ -83,7 +83,7 @@ impl DM {
         let _ = uuid
             .as_bytes()
             .read(mut_slice_from_c_str(&mut hdr.uuid))
-            .map_err(|err| DmError::GeneralIo(err.to_string()))?;
+            .map_err(DmError::RequestConstruction)?;
         Ok(())
     }
 
@@ -454,7 +454,7 @@ impl DM {
             let _ = target_type
                 .as_bytes()
                 .read(dst)
-                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
+                .map_err(DmError::RequestConstruction)?;
 
             // Size of the largest single member of dm_target_spec
             let align_to_size = size_of::<u64>();
@@ -463,15 +463,15 @@ impl DM {
 
             cursor
                 .write_all(slice_from_c_struct(&targ))
-                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
+                .map_err(DmError::RequestConstruction)?;
             cursor
                 .write_all(params.as_bytes())
-                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
+                .map_err(DmError::RequestConstruction)?;
 
             let padding = aligned_len - params.len();
             cursor
                 .write_all(vec![0; padding].as_slice())
-                .map_err(|err| DmError::GeneralIo(err.to_string()))?;
+                .map_err(DmError::RequestConstruction)?;
         }
 
         let mut hdr =
