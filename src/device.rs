@@ -2,19 +2,41 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use core::{fmt, str::FromStr};
+//! Types for working with device numbers in the format expected by
+//! the Linux kernel.
+//!
+//! The kernel works with `kdev_t`, which is a `u32` quantity divided
+//! into a 12-bit "major number" and a 20-bit "minor number".  In some
+//! cases—notably, for our purposes, the `dev` fields of
+//! [`dm_ioctl`][crate::bindings::dm_ioctl],
+//! [`dm_target_deps`][crate::bindings::dm_target_deps], and
+//! [`dm_name_list`][crate::bindings::dm_name_list]—a `kdev_t`
+//! quantity is passed to user space in a 64-bit field, but its
+//! high 32 bits are reserved, should-be-zero.
+//!
+//! For backward compatibility with very old kernels where `kdev_t`
+//! was only 16 bits, the major and minor numbers are not contiguous,
+//! but rather are packed into the 32-bit field as `mnoM NOpq` where
+//! `mnopq` are hex digits of the minor number and `MNO` are hex
+//! digits of the major number.
+//!
+//! GNU libc extended this format to 64 bits, with 32 bits each for
+//! major and minor numbers, using the pattern `MNOP Qmno pqrR STst`.
+//! musl and bionic libc adopted the same 64-bit format.  If the
+//! kernel ever starts using wider device numbers, one would hope
+//! it would also follow suit.  Therefore, when decoding the above
+//! 64-bit fields from the kernel, we use the C library's extended
+//! format, but when encoding a kdev_t from a Device object, we
+//! produce a 32-bit quantity or fail.
 
-use nix::libc::{dev_t, major, makedev, minor};
-
-use crate::errors::DmError;
+use core::fmt;
 
 #[cfg(test)]
 #[path = "tests/device.rs"]
 mod test;
 
-/// A struct containing the device's major and minor numbers
-///
-/// Also allows conversion to/from a single 64bit dev_t value.
+/// A struct representing a block device, identified by major and
+/// minor numbers.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Device {
     /// Device major number
@@ -30,64 +52,32 @@ impl fmt::Display for Device {
     }
 }
 
-impl FromStr for Device {
-    type Err = DmError;
+impl Device {
+    /// Make a `Device` from a 64-bit extended `kdev_t`.
+    /// See module-level documentation for discussion of the format.
+    #[rustfmt::skip]
+    #[allow(clippy::identity_op)]
+    pub fn from_kdev_t(val: u64) -> Device {
+        let major: u32 =
+            (((val & 0x0000_0000_000f_ff00_u64) >>  8) as u32)
+          | (((val & 0xffff_f000_0000_0000_u64) >> 32) as u32);
 
-    fn from_str(s: &str) -> Result<Device, DmError> {
-        let vals = s.split(':').collect::<Vec<_>>();
-        if vals.len() != 2 {
-            let err_msg = format!("value \"{s}\" split into wrong number of fields");
-            return Err(DmError::InvalidArgument(err_msg));
-        }
-        let major = vals[0].parse::<u32>().map_err(|_| {
-            DmError::InvalidArgument(format!(
-                "could not parse \"{}\" to obtain major number",
-                vals[0]
-            ))
-        })?;
-        let minor = vals[1].parse::<u32>().map_err(|_| {
-            DmError::InvalidArgument(format!(
-                "could not parse \"{}\" to obtain minor number",
-                vals[1]
-            ))
-        })?;
-        Ok(Device { major, minor })
-    }
-}
-
-impl From<dev_t> for Device {
-    fn from(val: dev_t) -> Device {
-        let major = unsafe { major(val) };
-
-        let minor = unsafe { minor(val) };
+        let minor: u32 =
+            (((val & 0x0000_0000_0000_00ff_u64) >>  0) as u32)
+          | (((val & 0x0000_0fff_fff0_0000_u64) >> 12) as u32);
 
         Device { major, minor }
     }
-}
 
-impl From<Device> for dev_t {
-    fn from(dev: Device) -> dev_t {
-        makedev(dev.major, dev.minor)
-    }
-}
-
-/// The Linux kernel's kdev_t encodes major/minor values as mmmM MMmm.
-impl Device {
-    /// Make a Device from a kdev_t.
-    pub fn from_kdev_t(val: u32) -> Device {
-        Device {
-            major: (val & 0xf_ff00) >> 8,
-            minor: (val & 0xff) | ((val >> 12) & 0xf_ff00),
-        }
-    }
-
-    /// Convert to a kdev_t. Return None if values are not expressible as a
-    /// kdev_t.
+    /// Convert self to a `kdev_t` value.  Returns `None` if self
+    /// is not representable as a *32-bit* kdev_t.
     pub fn to_kdev_t(self) -> Option<u32> {
-        if self.major > 0xfff || self.minor > 0xf_ffff {
+        if self.major > 0x0fff || self.minor > 0xf_ffff {
             return None;
         }
 
-        Some((self.minor & 0xff) | (self.major << 8) | ((self.minor & !0xff) << 12))
+        let major = self.major << 8;
+        let minor = (self.minor & 0xff) | ((self.minor & 0xf_ff00) << 12);
+        Some(major | minor)
     }
 }

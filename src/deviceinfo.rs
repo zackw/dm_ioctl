@@ -67,9 +67,7 @@ impl TryFrom<dmi::Struct_dm_ioctl> for DeviceInfo {
             open_count: ioctl.open_count,
             flags: DmFlags::from_bits_truncate(ioctl.flags),
             event_nr: ioctl.event_nr,
-            // dm_ioctl struct reserves 64 bits for device but kernel "huge"
-            // encoding is only 32 bits.
-            dev: Device::from_kdev_t(ioctl.dev as u32),
+            dev: Device::from_kdev_t(ioctl.dev),
             uuid,
             name,
         })

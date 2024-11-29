@@ -257,7 +257,11 @@ impl DM {
                     None
                 };
 
-                devs.push((DmNameBuf::new(dm_name)?, device.dev.into(), event_nr));
+                devs.push((
+                    DmNameBuf::new(dm_name)?,
+                    Device::from_kdev_t(device.dev),
+                    event_nr,
+                ));
 
                 if device.next == 0 {
                     break;
@@ -520,12 +524,7 @@ impl DM {
                 )
             };
 
-            // Note: The DM target_deps struct reserves 64 bits for each entry
-            // but only 32 bits is used by kernel "huge" dev_t encoding.
-            Ok(dev_slc
-                .iter()
-                .map(|d| Device::from_kdev_t(*d as u32))
-                .collect())
+            Ok(dev_slc.iter().map(|d| Device::from_kdev_t(*d)).collect())
         }
     }
 
