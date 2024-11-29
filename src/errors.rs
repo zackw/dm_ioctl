@@ -4,7 +4,8 @@
 
 /*! Definition for low level error class for core methods !*/
 
-use std::{self, path::PathBuf};
+use core::fmt;
+use std::path::PathBuf;
 
 use crate::deviceinfo::DeviceInfo;
 
@@ -41,8 +42,8 @@ pub enum DmError {
     GeneralIo(String),
 }
 
-impl std::fmt::Display for DmError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for DmError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ContextInit(err) => {
                 write!(f, "DM context not initialized due to IO error: {err}")
@@ -70,8 +71,8 @@ impl std::fmt::Display for DmError {
     }
 }
 
-impl std::error::Error for DmError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for DmError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match self {
             Self::Ioctl(_, _, _, err) => Some(err),
             _ => None,

@@ -2,13 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use core::{cmp, mem::size_of, slice, str};
+
 use std::{
-    cmp,
     fs::File,
     io::{Cursor, Read, Write},
-    mem::size_of,
     os::unix::io::{AsRawFd, RawFd},
-    slice, str,
 };
 
 use nix::libc::ioctl as nix_ioctl;

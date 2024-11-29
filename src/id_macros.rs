@@ -70,8 +70,8 @@ macro_rules! str_id {
             }
         }
 
-        impl std::fmt::Display for $B {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        impl core::fmt::Display for $B {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 write!(f, "{}", &self.inner)
             }
         }
@@ -92,13 +92,13 @@ macro_rules! str_id {
             }
         }
 
-        impl std::borrow::Borrow<$B> for $O {
+        impl core::borrow::Borrow<$B> for $O {
             fn borrow(&self) -> &$B {
                 self.deref()
             }
         }
 
-        impl std::ops::Deref for $O {
+        impl core::ops::Deref for $O {
             type Target = $B;
             fn deref(&self) -> &$B {
                 $B::new(&self.inner).expect("inner satisfies all correctness criteria for $B::new")

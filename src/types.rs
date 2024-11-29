@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::{fmt, ops::Deref};
+use core::{fmt, ops::Deref};
 
 use crate::{
     dm_ioctl::{DM_NAME_LEN, DM_UUID_LEN},
