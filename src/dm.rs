@@ -713,7 +713,7 @@ mod tests {
 
     use crate::{
         errors::DmError,
-        testing::{test_name, test_uuid},
+        testing::{list_test_devices, test_name, test_uuid},
     };
 
     use super::*;
@@ -734,7 +734,7 @@ mod tests {
     /// Verify that if no devices have been created the list of test devices
     /// is empty.
     fn sudo_test_list_devices_empty() {
-        assert!(DM::new().unwrap().list_test_devices().unwrap().is_empty());
+        assert!(list_test_devices(&DM::new().unwrap()).unwrap().is_empty());
     }
 
     #[test]
@@ -745,7 +745,7 @@ mod tests {
         let name = test_name("example-dev").expect("is valid DM name");
         dm.device_create(&name, None, DmFlags::default()).unwrap();
 
-        let devices = dm.list_test_devices().unwrap();
+        let devices = list_test_devices(&dm).unwrap();
 
         assert_eq!(devices.len(), 1);
 
@@ -884,7 +884,7 @@ mod tests {
 
         assert_matches!(dm.device_info(&DevId::Name(&new_name)), Ok(_));
 
-        let devices = dm.list_test_devices().unwrap();
+        let devices = list_test_devices(&dm).unwrap();
         assert_eq!(devices.len(), 1);
 
         if dm.version().unwrap().1 >= 37 {
