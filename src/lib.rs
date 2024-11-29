@@ -77,12 +77,13 @@ extern crate assert_matches;
 #[macro_use]
 mod id_macros;
 
+mod bindings;
 mod dm_ioctl;
-mod sys;
 mod util;
 
 #[cfg(test)]
-mod testing;
+#[path = "tests/support.rs"]
+mod test_support;
 
 // Modules that define public interfaces
 

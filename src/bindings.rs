@@ -21,7 +21,8 @@ use ::core::marker::PhantomData;
 use ::core::slice;
 
 #[cfg(test)]
-mod test;
+#[path = "tests/bindings.rs"]
+mod tests;
 
 #[repr(C)]
 #[derive(Default)]
