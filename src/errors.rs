@@ -8,6 +8,7 @@ use core::fmt;
 use std::io;
 
 use crate::deviceinfo::DeviceInfo;
+use crate::dm_ioctl::DmIoctlCmd;
 
 #[derive(Debug)]
 /// Represents any kind of failure produced by this crate.
@@ -22,14 +23,15 @@ pub enum DmError {
     /// part of the program state or the environment.
     InvalidArgument(String),
 
-    /// An error returned exclusively by DM methods.
-    /// This error is initiated in DM::do_ioctl and returned by
-    /// numerous wrapper methods.
+    /// A DM ioctl operation returned a system-level error.  Records
+    /// the opcode, the system error code, and, if possible, decoded
+    /// versions of the request and response packets, to facilitate
+    /// debugging.
     Ioctl(
-        u8,
+        DmIoctlCmd,
         Option<Box<DeviceInfo>>,
         Option<Box<DeviceInfo>>,
-        Box<nix::Error>,
+        nix::Error,
     ),
 
     /// The kernel's response to a DM operation is impossibly large;
@@ -53,7 +55,7 @@ impl fmt::Display for DmError {
             Self::InvalidArgument(err) => write!(f, "invalid argument: {err}"),
             Self::Ioctl(op, hdr_in, hdr_out, err) => write!(
                 f,
-                "low-level ioctl error due to nix error; ioctl number: {op}, input header: {hdr_in:?}, header result: {hdr_out:?}, error: {err}"
+                "DM operation {op:?} failed: input header: {hdr_in:?}, header result: {hdr_out:?}, error: {err}"
             ),
             Self::IoctlResultTooLarge => write!(
                 f,

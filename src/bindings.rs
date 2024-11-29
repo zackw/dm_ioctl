@@ -154,7 +154,7 @@ pub const DM_IOCTL: u32 = 0xFD;
 
 /// `_IOC` operation codes for device mapper ioctls.
 #[repr(u8)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum DmIoctlCmd {
     /// Get the version information for the ioctl interface.
     DM_VERSION_CMD = 0,

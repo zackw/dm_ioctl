@@ -100,7 +100,7 @@ fn sudo_test_rename_uuid() {
 
     assert_matches!(
         dm.device_rename(&name, &DevId::Uuid(&new_uuid)),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EINVAL && op == dmi::DM_DEV_RENAME_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EINVAL && op == dmi::DM_DEV_RENAME_CMD
     );
 
     dm.device_remove(&DevId::Name(&name), DmFlags::default())
@@ -118,7 +118,7 @@ fn sudo_test_rename_uuid_id() {
         .unwrap();
     assert_matches!(
         dm.device_rename(&name, &DevId::Uuid(&uuid)),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD
     );
 
     dm.device_remove(&DevId::Name(&name), DmFlags::default())
@@ -155,7 +155,7 @@ fn sudo_test_rename_id() {
 
     assert_matches!(
         dm.device_rename(&name, &DevId::Name(&name)),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD
     );
 
     dm.device_remove(&DevId::Name(&name), DmFlags::default())
@@ -176,7 +176,7 @@ fn sudo_test_rename() {
 
     assert_matches!(
         dm.device_info(&DevId::Name(&name)),
-        Err(DmError::Ioctl(_, _, _, err)) if *err == nix::errno::Errno::ENXIO
+        Err(DmError::Ioctl(_, _, _, err)) if err == nix::errno::Errno::ENXIO
     );
 
     assert_matches!(dm.device_info(&DevId::Name(&new_name)), Ok(_));
@@ -196,7 +196,7 @@ fn sudo_test_rename() {
 
     assert_matches!(
         dm.device_rename(&new_name, &DevId::Name(&third_name)),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_RENAME_CMD
     );
 
     dm.device_remove(&DevId::Name(&third_name), DmFlags::default())
@@ -214,7 +214,7 @@ fn sudo_test_rename_non_existent() {
             &test_name("old_name").expect("is valid DM name"),
             &DevId::Name(&new_name)
         ),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_RENAME_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_RENAME_CMD
     );
 }
 
@@ -226,7 +226,7 @@ fn sudo_test_remove_non_existent() {
             &DevId::Name(&test_name("junk").expect("is valid DM name")),
             DmFlags::default()
         ),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_REMOVE_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_REMOVE_CMD
     );
 }
 
@@ -253,7 +253,7 @@ fn sudo_test_table_status_non_existent() {
             &DevId::Name(&test_name("junk").expect("is valid DM name")),
             DmFlags::default()
         ),
-        Err(DmError::Ioctl(_, _, _, err)) if *err == nix::errno::Errno::ENXIO
+        Err(DmError::Ioctl(_, _, _, err)) if err == nix::errno::Errno::ENXIO
     );
 }
 
@@ -266,7 +266,7 @@ fn sudo_test_table_status_non_existent_table() {
             &DevId::Name(&name),
             DmFlags::DM_STATUS_TABLE
         ),
-        Err(DmError::Ioctl(_, _, _, err)) if *err == nix::errno::Errno::ENXIO
+        Err(DmError::Ioctl(_, _, _, err)) if err == nix::errno::Errno::ENXIO
     );
 }
 
@@ -298,7 +298,7 @@ fn sudo_status_no_name() {
     let name = test_name("example_dev").expect("is valid DM name");
     assert_matches!(
         DM::new().unwrap().device_info(&DevId::Name(&name)),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_STATUS_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::ENXIO && op == dmi::DM_DEV_STATUS_CMD
     );
 }
 
@@ -317,19 +317,19 @@ fn sudo_test_double_creation() {
         .unwrap();
     assert_matches!(
         dm.device_create(&name, Some(&uuid), DmFlags::default()),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD
     );
     assert_matches!(
         dm.device_create(&name, None, DmFlags::default()),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD
     );
     assert_matches!(
         dm.device_create(&name, Some(&uuid_alt), DmFlags::default()),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD
     );
     assert_matches!(
         dm.device_create(&name_alt, Some(&uuid), DmFlags::default()),
-        Err(DmError::Ioctl(op, _, _, err)) if *err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD as u8
+        Err(DmError::Ioctl(op, _, _, err)) if err == nix::errno::Errno::EBUSY && op == dmi::DM_DEV_CREATE_CMD
     );
     dm.device_remove(&DevId::Name(&name), DmFlags::default())
         .unwrap();

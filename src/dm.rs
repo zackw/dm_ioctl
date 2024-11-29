@@ -136,10 +136,10 @@ impl DM {
                 convert_ioctl_res!(nix_ioctl(self.file.as_raw_fd(), op, buffer.as_mut_ptr()))
             } {
                 return Err(DmError::Ioctl(
-                    op as u8,
+                    ioctl,
                     DeviceInfo::new(*hdr).ok().map(Box::new),
                     DeviceInfo::new(*buffer_hdr).ok().map(Box::new),
-                    Box::new(err),
+                    err,
                 ));
             }
 
