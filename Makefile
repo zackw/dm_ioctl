@@ -40,7 +40,7 @@ build-tests:
 	cargo test --no-run
 
 test:
-	RUST_BACKTRACE=1 cargo test -- --skip sudo_ --skip loop_
+	RUST_BACKTRACE=1 cargo test -- --skip sudo_
 
 sudo_test:
 	RUST_BACKTRACE=1 RUST_TEST_THREADS=1 CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER='sudo -E' cargo test
