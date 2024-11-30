@@ -2,50 +2,94 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use crate::ioctl_cmds as dmi;
-
 use bitflags::bitflags;
 
 bitflags! {
     /// Flags used by devicemapper.
     #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
     pub struct DmFlags: u32 {
-        /// In: Device should be read-only.
-        /// Out: Device is read-only.
-        const DM_READONLY             = dmi::DM_READONLY_FLAG;
-        /// In: Device should be suspended.
-        /// Out: Device is suspended.
-        const DM_SUSPEND              = dmi::DM_SUSPEND_FLAG;
-        /// In: Use passed-in minor number.
-        const DM_PERSISTENT_DEV       = dmi::DM_PERSISTENT_DEV_FLAG;
-        /// In: STATUS command returns table info instead of status.
-        const DM_STATUS_TABLE         = dmi::DM_STATUS_TABLE_FLAG;
-        /// Out: Active table is present.
-        const DM_ACTIVE_PRESENT       = dmi::DM_ACTIVE_PRESENT_FLAG;
-        /// Out: Inactive table is present.
-        const DM_INACTIVE_PRESENT     = dmi::DM_INACTIVE_PRESENT_FLAG;
-        /// Out: Passed-in buffer was too small.
-        const DM_BUFFER_FULL          = dmi::DM_BUFFER_FULL_FLAG;
-        /// Obsolete.
-        const DM_SKIP_BDGET           = dmi::DM_SKIP_BDGET_FLAG;
-        /// In: Avoid freezing filesystem when suspending.
-        const DM_SKIP_LOCKFS          = dmi::DM_SKIP_LOCKFS_FLAG;
-        /// In: Suspend without flushing queued I/Os.
-        const DM_NOFLUSH              = dmi::DM_NOFLUSH_FLAG;
-        /// In: Query inactive table instead of active.
-        const DM_QUERY_INACTIVE_TABLE = dmi::DM_QUERY_INACTIVE_TABLE_FLAG;
+        /// In: If set, device should be made read-only.
+        /// If cleared, device should be made read-write.
+        ///
+        /// Out: True if device is currently read-only.
+        const DM_READONLY             = 1 << 0;
+
+        /// In: If set, device should be suspended.
+        /// If cleared, device should be resumed.
+        ///
+        /// Out: True if device is currently suspended.
+        const DM_SUSPEND              = 1 << 1;
+
+        // bit (1 << 2) is not used
+
+        /// In: Use the passed-in minor number, don't allocate a new one.
+        const DM_PERSISTENT_DEV       = 1 << 3;
+
+        /// In: Retrieve table information rather than current status.
+        /// (Only meaningful for `DM_DEV_STATUS_CMD`.)
+        const DM_STATUS_TABLE         = 1 << 4;
+
+        /// Out: True if an active table is present for this device.
+        const DM_ACTIVE_PRESENT       = 1 << 5;
+
+        /// Out: True if an inactive table is present for this device
+        const DM_INACTIVE_PRESENT     = 1 << 6;
+
+        /// Out: Indicates that the buffer passed in wasn't big enough
+        /// for the results.
+        const DM_BUFFER_FULL          = 1 << 8;
+
+        /// In: Obsolete, ignored.
+        const DM_SKIP_BDGET           = 1 << 9;
+
+        /// In: When suspending a device, avoid attempting to freeze
+        /// any filesystem backed by that device.
+        const DM_SKIP_LOCKFS          = 1 << 10;
+
+        /// In: When suspending a device, do not flush queued I/O first.
+        ///
+        /// May also avoid flushing queued I/O before waiting for
+        /// "significant events" (`DM_DEV_WAIT_CMD`) or generating
+        /// statistics (`DM_TABLE_STATUS_CMD`), depending on the target.
+        const DM_NOFLUSH              = 1 << 11;
+
+        /// In: Retrieve table information for the inactive table,
+        /// rather than the active one.  Check the `DM_INACTIVE_PRESENT`
+        /// bit before using the data returned; if it is cleared,
+        /// there is no inactive table, and the information returned
+        /// is garbage.
+        const DM_QUERY_INACTIVE_TABLE = 1 << 12;
+
         /// Out: A uevent was generated, the caller may need to wait for it.
-        const DM_UEVENT_GENERATED     = dmi::DM_UEVENT_GENERATED_FLAG;
-        /// In: Rename affects UUID field, not name field.
-        const DM_UUID                 = dmi::DM_UUID_FLAG;
-        /// In: All buffers are wiped after use. Use when handling crypto keys.
-        const DM_SECURE_DATA          = dmi::DM_SECURE_DATA_FLAG;
-        /// Out: A message generated output data.
-        const DM_DATA_OUT             = dmi::DM_DATA_OUT_FLAG;
-        /// In: Do not remove in-use devices.
-        /// Out: Device scheduled to be removed when closed.
-        const DM_DEFERRED_REMOVE      = dmi::DM_DEFERRED_REMOVE;
+        const DM_UEVENT_GENERATED     = 1 << 13;
+
+        /// In: Change the UUID field, not the name field.
+        /// Only permitted if no uuid was previously supplied.
+        /// An existing uuid cannot be changed.
+        const DM_UUID                 = 1 << 14;
+
+        /// In: Wipe all internal buffers before returning.
+        /// Use when sending or requesting sensitive data, such as
+        /// encryption keys.
+        const DM_SECURE_DATA          = 1 << 15;
+
+        /// Out: True if a message generated output data.
+        const DM_DATA_OUT             = 1 << 16;
+
+        /// In: Only meaningful with `DM_DEV_REMOVE` and `DM_REMOVE_ALL`.
+        /// If set, devices that cannot be removed immediately because
+        /// they are still in use should instead be scheduled for removal
+        /// after all users are finished (e.g. filesystems unmounted).
+        ///
+        /// Out: Meaningful for all commands; true if the device has been
+        /// scheduled to be removed after all users are finished.
+        const DM_DEFERRED_REMOVE      = 1 << 17;
+
         /// Out: Device is suspended internally.
-        const DM_INTERNAL_SUSPEND     = dmi::DM_INTERNAL_SUSPEND_FLAG;
+        const DM_INTERNAL_SUSPEND     = 1 << 18;
+
+        /// In: Return the raw table information that would be measured
+        /// by the IMA subsystem on device state change.
+        const DM_IMA_MEASUREMENT      = 1 << 19;
     }
 }
