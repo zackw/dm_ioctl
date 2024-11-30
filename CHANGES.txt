@@ -16,9 +16,27 @@ mini-devicemapper 0.40.0
 - DM::device_remove() no longer retries the operation on EBUSY.
   Do that yourself if you need to.
 
-- no longer uses bindgen
-- no longer depends on env_logger, log, rand, retry, or serde
-- devicemapper-rs-sys has been folded into the main crate
+- Device objects can no longer be constructed from strings or from
+  C library dev_t quantities.  However, Device::from_kdev_t now
+  understands the 64-bit extended dev_t format used by at least
+  three common C libraries used with Linux (GNU, musl, and Bionic).
+
+  (As of kernel 6.12, kdev_t proper is still only 32 bits.
+  The extended format matches the kernel’s format for all
+  values that fit in 32 bits.)
+
+- The function devnode_to_devno has been removed.
+
+- The set of DmError variants has changed, as have many of their
+  payloads.  This enum is now non-exhaustive.
+
+- DmFlags now exposes the DM_IMA_MEASUREMENT(_FLAG) bit, which was
+  added in kernel API version 4.45.0 (kernel 5.15).
+
+- The library no longer uses bindgen.
+- The library no longer depends on env_logger, log, rand, retry,
+  or serde.
+- devicemapper-rs-sys has been folded into the main crate.
 
 devicemapper 0.34.4
 ===================
