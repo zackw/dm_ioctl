@@ -311,7 +311,7 @@ impl DM {
     /// # Example
     ///
     /// ```no_run
-    /// use devicemapper::{DM, DmFlags, DmName};
+    /// use dm_ioctl::{DM, DmFlags, DmName};
     ///
     /// let dm = DM::new().unwrap();
     ///
@@ -399,7 +399,7 @@ impl DM {
     /// # Example
     ///
     /// ```no_run
-    /// use devicemapper::{DM, DevId, DmFlags, DmName};
+    /// use dm_ioctl::{DM, DevId, DmFlags, DmName};
     /// let dm = DM::new().unwrap();
     ///
     /// let name = DmName::new("example-dev").expect("is valid DM name");
@@ -464,7 +464,7 @@ impl DM {
     /// # Example
     ///
     /// ```no_run
-    /// use devicemapper::{DM, DevId, DmName, DmFlags};
+    /// use dm_ioctl::{DM, DevId, DmName, DmFlags};
     /// let dm = DM::new().unwrap();
     ///
     /// // Create a 16MiB device (32768 512-byte sectors) that maps to /dev/sdb1
@@ -658,7 +658,7 @@ impl DM {
     /// # Example
     ///
     /// ```no_run
-    /// use devicemapper::{DM, DevId, DmFlags, DmName};
+    /// use dm_ioctl::{DM, DevId, DmFlags, DmName};
     /// let dm = DM::new().unwrap();
     ///
     /// let name = DmName::new("example-dev").expect("is valid DM name");

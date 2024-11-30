@@ -1,8 +1,17 @@
-mini-devicemapper 0.40.0
-========================
+dm_ioctl 4.48.0
+===============
+
+- The crate has been renamed to dm_ioctl and its version number
+  adjusted to match the newest <linux/dm-ioctl.h> API version that
+  it understands.  (It will also work with substantially older
+  dm-ioctl API versions.)
 
 - The high-level interface (CacheDev, LinearDev, ThinDev, etc) has
-  been removed.  Only the lower level DM interface remains.
+  been removed.  Only the lower level DM interface, which is a thin
+  but type-safe wrapper around the device-mapper ioctls, remains.
+  In practical terms, what this means is dm_ioctl will not help you
+  construct configuration “tables”; if you want that, you should
+  keep using devicemapper.
 
 - Udev integration has been removed.  The library will not wait for
   udev to do anything, nor will it manipulate the flag bits that are

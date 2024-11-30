@@ -12,7 +12,7 @@ extern crate assert_matches;
 mod support;
 use support::{list_test_devices, test_name, test_uuid};
 
-use devicemapper::{DevId, DmError, DmFlags, DmIoctlCmd, DM};
+use dm_ioctl::{DevId, DmError, DmFlags, DmIoctlCmd, DM};
 
 #[test]
 /// Test that some version can be obtained.

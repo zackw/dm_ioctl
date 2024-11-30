@@ -77,6 +77,10 @@ extern crate assert_matches;
 mod bindings;
 mod util;
 
+#[cfg(test)]
+#[path = "tests/misc.rs"]
+mod test;
+
 // Modules that define public interfaces
 
 mod device;
@@ -99,3 +103,17 @@ pub use ioctl_cmds::DmIoctlCmd;
 
 pub mod errors;
 pub use errors::{DmError, DmResult};
+
+/// The version number of this crate, which is equal to the API version
+/// number of the newest device-mapper API that it understands.
+pub const VERSION: semver::Version = semver::Version {
+    // These values must be manually kept in sync with the version
+    // number in Cargo.toml because it is not currently possible to
+    // do `env!("CARGO_PKG_VERSION_xxxx").parse().unwrap()` in const
+    // context.  There is a unit test that checks they are equal.
+    major: 4,
+    minor: 48,
+    patch: 0,
+    pre: semver::Prerelease::EMPTY,
+    build: semver::BuildMetadata::EMPTY,
+};

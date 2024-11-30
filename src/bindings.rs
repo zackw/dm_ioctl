@@ -51,21 +51,6 @@ pub const DM_NAME_LEN: usize = 128;
 /// Inclusive of C string terminator.
 pub const DM_UUID_LEN: usize = 129;
 
-/// Major version of the dm ioctl interface as defined by this header.
-/// Not necessarily equal to the version as implemented by the running kernel.
-pub const DM_VERSION_MAJOR: u32 = 4;
-
-/// Minor version of the dm ioctl interface as defined by this header.
-/// Not necessarily equal to the version as implemented by the running kernel.
-pub const DM_VERSION_MINOR: u32 = 48;
-
-/// Patchlevel version of the dm ioctl interface as defined by this header.
-/// Not necessarily equal to the version as implemented by the running kernel.
-pub const DM_VERSION_PATCHLEVEL: u32 = 0;
-
-/// Extra version information.
-pub const DM_VERSION_EXTRA: &[u8; 20] = b"-ioctl (2023-03-01)\0";
-
 /// All ioctl arguments consist of a single chunk of memory,
 /// with this structure at the start.  If a uuid is specified
 /// any lookup (eg. for a DM_INFO) will be done on that, *not* the name.

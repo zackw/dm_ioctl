@@ -1,10 +1,13 @@
 [package]
-name = "devicemapper"
-version = "0.34.4"
-authors = ["Stratis Developers <stratis-devel@lists.fedorahosted.org>"]
-description = "A library for using Linux device mapper"
-documentation = "https://docs.rs/devicemapper/"
-repository = "https://github.com/stratis-storage/devicemapper-rs"
+name = "dm_ioctl"
+version = "4.48.0" # keep this in sync with src/lib.rs
+authors = [
+  "Zack Weinberg <zack@owlfolio.org>",
+  "Stratis Developers <stratis-devel@lists.fedorahosted.org>",
+]
+description = "Minimal safe wrapper around the Linux device-mapper API"
+documentation = "https://docs.rs/dm_ioctl/"
+repository = "https://git.sr.ht/~zackw/dm_ioctl/"
 readme = "README.md"
 categories = ["os::linux-apis", "api-bindings"]
 keywords = ["Linux", "device", "mapper", "libdm", "storage"]
