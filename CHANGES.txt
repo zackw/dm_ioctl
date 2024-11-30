@@ -43,6 +43,11 @@ mini-devicemapper 0.40.0
 - DmFlags now exposes the DM_IMA_MEASUREMENT(_FLAG) bit, which was
   added in kernel API version 4.45.0 (kernel 5.15).
 
+- New bitflags type DmNameListFlags exposes the flags that can appear
+  in extended name list records.  This is not particularly useful
+  right now, as we don’t decode extended name list records, but it
+  might become useful in the future.
+
 - The library no longer uses bindgen.
 - The library no longer depends on env_logger, log, rand, retry,
   or serde.

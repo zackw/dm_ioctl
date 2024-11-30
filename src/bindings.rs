@@ -43,9 +43,6 @@ pub const DM_MAX_TYPE_NAME: u32 = 16;
 pub const DM_NAME_LEN: usize = 128;
 pub const DM_UUID_LEN: usize = 129;
 
-pub const DM_NAME_LIST_FLAG_HAS_UUID: u32 = 1;
-pub const DM_NAME_LIST_FLAG_DOESNT_HAVE_UUID: u32 = 2;
-
 /// Major version of the dm ioctl interface as defined by this header.
 /// Not necessarily equal to the version as implemented by the running kernel.
 pub const DM_VERSION_MAJOR: u32 = 4;

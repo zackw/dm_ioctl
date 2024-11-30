@@ -63,9 +63,13 @@ bitflags! {
         /// Out: A uevent was generated, the caller may need to wait for it.
         const DM_UEVENT_GENERATED     = 1 << 13;
 
-        /// In: Change the UUID field, not the name field.
+        /// In:
+        ///
+        /// For `DM_RENAME`: Change the UUID field, not the name field.
         /// Only permitted if no uuid was previously supplied.
         /// An existing uuid cannot be changed.
+        ///
+        /// For `DM_LIST_DEVICES`: Include UUIDs in the result.
         const DM_UUID                 = 1 << 14;
 
         /// In: Wipe all internal buffers before returning.
@@ -91,5 +95,22 @@ bitflags! {
         /// In: Return the raw table information that would be measured
         /// by the IMA subsystem on device state change.
         const DM_IMA_MEASUREMENT      = 1 << 19;
+    }
+
+    /// Flags in `struct dm_name_list`'s extended portion.  We don't
+    /// currently decode the extended portion but we may in the future.
+    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+    pub struct DmNameListFlags: u32 {
+        /// This extended name record includes a UUID.
+        const HAS_UUID           = 1;
+
+        /// This extended name record does not include a UUID.
+        ///
+        /// (If UUIDs were requested, the kernel will set exactly
+        /// one of HAS_UUID and DOESNT_HAVE_UUID in each record.
+        /// If UUIDs were not requested, the kernel will set neither.
+        /// This seems unnecessarily baroque to me, but to be frank
+        /// if I had designed DM the entire API would be very different.)
+        const DOESNT_HAVE_UUID   = 2;
     }
 }

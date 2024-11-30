@@ -92,7 +92,7 @@ mod dm;
 pub use dm::DM;
 
 mod flags;
-pub use flags::DmFlags;
+pub use flags::{DmFlags, DmNameListFlags};
 
 mod ioctl_cmds;
 pub use ioctl_cmds::DmIoctlCmd;
