@@ -29,12 +29,6 @@ pub enum DmError {
     /// in device IDs.
     DeviceIdHasBadChars,
 
-    /// This is a generic error that can be returned when a method
-    /// receives an invalid argument. Ideally, the argument should be
-    /// invalid in itself, i.e., it should not be made invalid by some
-    /// part of the program state or the environment.
-    InvalidArgument(String),
-
     /// A DM ioctl operation returned a system-level error.  Records
     /// the opcode, the system error code, and, if possible, decoded
     /// versions of the request and response packets, to facilitate
@@ -45,6 +39,10 @@ pub enum DmError {
         Option<Box<DeviceInfo>>,
         nix::Error,
     ),
+
+    /// The kernel's response to a DM operation was malformed in
+    /// some way; the string provides details.
+    IoctlResultMalformed(&'static str),
 
     /// The kernel's response to a DM operation is impossibly large;
     /// so large that the `data_size` field of the `dm_ioctl` header
@@ -73,10 +71,13 @@ impl fmt::Display for DmError {
             Self::DeviceIdHasBadChars => {
                 write!(f, "device ID contains NULs or non-ASCII chars")
             }
-            Self::InvalidArgument(err) => write!(f, "invalid argument: {err}"),
             Self::Ioctl(op, hdr_in, hdr_out, err) => write!(
                 f,
                 "DM operation {op:?} failed: input header: {hdr_in:?}, header result: {hdr_out:?}, error: {err}"
+            ),
+            Self::IoctlResultMalformed(detail) => write!(
+                f,
+                "ioctl result packet is malformed (kernel bug?): {detail}"
             ),
             Self::IoctlResultTooLarge => write!(
                 f,

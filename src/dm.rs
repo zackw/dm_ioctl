@@ -223,7 +223,7 @@ impl DM {
             loop {
                 let device =
                     c_struct_from_slice::<dmi::Struct_dm_name_list>(result).ok_or_else(|| {
-                        DmError::InvalidArgument("Received null pointer from kernel".to_string())
+                        DmError::IoctlResultMalformed("Received null pointer from kernel")
                     })?;
                 let name_offset = unsafe {
                     (device.name.as_ptr() as *const u8).offset_from(device as *const _ as *const u8)
@@ -232,7 +232,7 @@ impl DM {
                 let dm_name = str_from_byte_slice(&result[name_offset..])
                     .map(|s| s.to_owned())
                     .ok_or_else(|| {
-                        DmError::InvalidArgument("Devicemapper name is not valid UTF8".to_string())
+                        DmError::IoctlResultMalformed("Devicemapper name is not valid UTF8")
                     })?;
 
                 // Get each device's event number after its name, if the kernel
@@ -246,9 +246,7 @@ impl DM {
                         result[offset..offset + size_of::<u32>()]
                             .try_into()
                             .map_err(|_| {
-                                DmError::InvalidArgument(
-                                    "Incorrectly sized slice for u32".to_string(),
-                                )
+                                DmError::IoctlResultMalformed("Incorrectly sized slice for u32")
                             })?,
                     );
 
@@ -545,17 +543,15 @@ impl DM {
 
                 let target_type = str_from_c_str(&targ.target_type)
                     .ok_or_else(|| {
-                        DmError::InvalidArgument(
-                            "Could not convert target type to a String".to_string(),
-                        )
+                        DmError::IoctlResultMalformed("Could not convert target type to a String")
                     })?
                     .to_string();
 
                 let params =
                     str_from_byte_slice(&result[size_of::<dmi::Struct_dm_target_spec>()..])
                         .ok_or_else(|| {
-                            DmError::InvalidArgument(
-                                "Invalid DM target parameters returned from kernel".to_string(),
+                            DmError::IoctlResultMalformed(
+                                "Invalid DM target parameters returned from kernel",
                             )
                         })?
                         .to_string();
@@ -631,8 +627,8 @@ impl DM {
                 let name =
                     str_from_byte_slice(&result[size_of::<dmi::Struct_dm_target_versions>()..])
                         .ok_or_else(|| {
-                            DmError::InvalidArgument(
-                                "Invalid DM target name returned from kernel".to_string(),
+                            DmError::IoctlResultMalformed(
+                                "Invalid DM target name returned from kernel",
                             )
                         })?
                         .to_string();
@@ -679,9 +675,7 @@ impl DM {
             Some(
                 str::from_utf8(&data_out[..data_out.len() - 1])
                     .map(|res| res.to_string())
-                    .map_err(|_| {
-                        DmError::InvalidArgument("Could not convert output to a String".to_string())
-                    })?,
+                    .map_err(|_| DmError::IoctlResultMalformed("Message result was not UTF-8"))?,
             )
         } else {
             None

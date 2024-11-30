@@ -40,7 +40,7 @@ impl TryFrom<dmi::Struct_dm_ioctl> for DeviceInfo {
 
     fn try_from(ioctl: dmi::Struct_dm_ioctl) -> DmResult<Self> {
         let uuid = str_from_c_str(&ioctl.uuid as &[c_char]).ok_or_else(|| {
-            DmError::InvalidArgument("Devicemapper UUID is not null terminated".to_string())
+            DmError::IoctlResultMalformed("Devicemapper UUID is not null terminated")
         })?;
         let uuid = if uuid.is_empty() {
             None
@@ -48,7 +48,7 @@ impl TryFrom<dmi::Struct_dm_ioctl> for DeviceInfo {
             Some(DmUuidBuf::new(uuid.to_string())?)
         };
         let name = str_from_c_str(&ioctl.name as &[c_char]).ok_or_else(|| {
-            DmError::InvalidArgument("Devicemapper name is not null terminated".to_string())
+            DmError::IoctlResultMalformed("Devicemapper name is not null terminated")
         })?;
         let name = if name.is_empty() {
             None
