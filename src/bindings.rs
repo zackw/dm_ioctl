@@ -12,13 +12,10 @@
 
 #![allow(dead_code)]
 #![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-#![allow(clippy::missing_safety_doc)]
 
 use ::core::ffi::{c_char, c_int, c_uint, c_ulonglong};
 use ::core::fmt;
 use ::core::marker::PhantomData;
-use ::core::slice;
 
 #[cfg(test)]
 #[path = "tests/bindings.rs"]
@@ -29,24 +26,8 @@ mod tests;
 pub struct FlexibleArrayMember<T>(PhantomData<T>, [T; 0]);
 impl<T> FlexibleArrayMember<T> {
     #[inline]
-    pub const fn new() -> Self {
-        FlexibleArrayMember(PhantomData, [])
-    }
-    #[inline]
     pub fn as_ptr(&self) -> *const T {
         self as *const _ as *const T
-    }
-    #[inline]
-    pub fn as_mut_ptr(&mut self) -> *mut T {
-        self as *mut _ as *mut T
-    }
-    #[inline]
-    pub unsafe fn as_slice(&self, len: usize) -> &[T] {
-        slice::from_raw_parts(self.as_ptr(), len)
-    }
-    #[inline]
-    pub unsafe fn as_mut_slice(&mut self, len: usize) -> &mut [T] {
-        slice::from_raw_parts_mut(self.as_mut_ptr(), len)
     }
 }
 impl<T> fmt::Debug for FlexibleArrayMember<T> {
