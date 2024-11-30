@@ -31,7 +31,9 @@ pub fn test_uuid(name: &str) -> DmResult<DmUuidBuf> {
 /// the devices whose names end with DM_TEST_ID, our test device suffix.
 /// This function is useful for listing devices in tests that should not
 /// take non-test devices into account.
-pub fn list_test_devices(dm: &DM) -> DmResult<Vec<(DmNameBuf, Device, Option<u32>)>> {
+pub fn list_test_devices(
+    dm: &DM,
+) -> DmResult<Vec<(DmNameBuf, Device, Option<u32>)>> {
     let mut test_devs = dm.list_devices()?;
     test_devs.retain(|x| x.0.as_bytes().ends_with(DM_TEST_ID.as_bytes()));
     Ok(test_devs)

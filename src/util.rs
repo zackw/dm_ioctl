@@ -18,7 +18,9 @@ pub fn align_to(num: usize, align_to: usize) -> usize {
 
 /// Convert from a &[c_char] to a &[u8].
 pub fn byte_slice_from_c_str(c_str: &[c_char]) -> &[u8] {
-    unsafe { slice::from_raw_parts(c_str as *const _ as *const u8, c_str.len()) }
+    unsafe {
+        slice::from_raw_parts(c_str as *const _ as *const u8, c_str.len())
+    }
 }
 
 /// Return a String parsed from the C string up to the first \0, or None
@@ -36,12 +38,16 @@ pub fn str_from_byte_slice(slc: &[u8]) -> Option<&str> {
 
 /// Return a mutable slice from the mutable C string provided as input
 pub fn mut_slice_from_c_str(c_str: &mut [c_char]) -> &mut [u8] {
-    unsafe { slice::from_raw_parts_mut(c_str as *mut _ as *mut u8, c_str.len()) }
+    unsafe {
+        slice::from_raw_parts_mut(c_str as *mut _ as *mut u8, c_str.len())
+    }
 }
 
 /// Convert the C struct into a properly-sized byte slice
 pub fn slice_from_c_struct<T>(strct: &T) -> &[u8] {
-    unsafe { slice::from_raw_parts(strct as *const _ as *const u8, size_of::<T>()) }
+    unsafe {
+        slice::from_raw_parts(strct as *const _ as *const u8, size_of::<T>())
+    }
 }
 
 /// Convert the byte slice into a properly sized C string reference
