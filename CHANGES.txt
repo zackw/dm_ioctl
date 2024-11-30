@@ -25,6 +25,16 @@ mini-devicemapper 0.40.0
   The extended format matches the kernel’s format for all
   values that fit in 32 bits.)
 
+- The ioctl opcodes (DM_*_CMD) are now exposed solely as unit variants
+  of a new enum, DmIoctlCmd.  The _CMD suffix has been removed from
+  their names (but the DM_ prefix is preserved).
+
+  Note that the only legitimate use of these opcodes outside of the
+  library is when inspecting DmError::Ioctl errors.  It is not even
+  possible to calculate the actual ioctl request numbers, let alone
+  invoke ioctl(2) yourself, without additional constants and structs
+  which are not exposed.
+
 - The function devnode_to_devno has been removed.
 
 - The set of DmError variants has changed, as have many of their

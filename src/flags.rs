@@ -26,7 +26,7 @@ bitflags! {
         const DM_PERSISTENT_DEV       = 1 << 3;
 
         /// In: Retrieve table information rather than current status.
-        /// (Only meaningful for `DM_DEV_STATUS_CMD`.)
+        /// (Only meaningful for `DM_DEV_STATUS`.)
         const DM_STATUS_TABLE         = 1 << 4;
 
         /// Out: True if an active table is present for this device.
@@ -49,8 +49,8 @@ bitflags! {
         /// In: When suspending a device, do not flush queued I/O first.
         ///
         /// May also avoid flushing queued I/O before waiting for
-        /// "significant events" (`DM_DEV_WAIT_CMD`) or generating
-        /// statistics (`DM_TABLE_STATUS_CMD`), depending on the target.
+        /// "significant events" (`DM_DEV_WAIT`) or generating
+        /// statistics (`DM_TABLE_STATUS`), depending on the target.
         const DM_NOFLUSH              = 1 << 11;
 
         /// In: Retrieve table information for the inactive table,
