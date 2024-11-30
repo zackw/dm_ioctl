@@ -1,5 +1,10 @@
-# Why 80 columns still? Because I can fit two 80-column-wide editor panes
-# side by side on my smallest screen at my preferred font size, but I can't
-# if you go even a little wider.
+# Enable this as soon as it is stabilized.
+# imports_layout = "HorizontalVertical"
+
+# Why 80 columns still? Because I can fit two 80-column-wide editor
+# panes side by side on my smallest screen at my preferred font size,
+# but I can't if you go even a little wider.
 max_width = 80
+
+# matching .editorconfig
 newline_style = "Unix"
