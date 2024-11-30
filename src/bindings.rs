@@ -36,9 +36,6 @@ impl<T> fmt::Debug for FlexibleArrayMember<T> {
     }
 }
 
-pub const DM_DIR: &[u8; 7] = b"mapper\0";
-pub const DM_CONTROL_NODE: &[u8; 8] = b"control\0";
-
 /// Maximum size of a device-mapper target type identifier
 /// (the `target_type` field of `struct dm_target_spec`).
 /// Inclusive of C string terminator.
