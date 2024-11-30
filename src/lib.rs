@@ -91,11 +91,11 @@ pub use dev_ids::{DevId, DmName, DmNameBuf, DmUuid, DmUuidBuf};
 mod dm;
 pub use dm::DM;
 
-mod dm_flags;
-pub use dm_flags::DmFlags;
+mod flags;
+pub use flags::DmFlags;
 
-mod dm_ioctl;
-pub use dm_ioctl::DmIoctlCmd;
+mod ioctl_cmds;
+pub use ioctl_cmds::DmIoctlCmd;
 
 pub mod errors;
 pub use errors::{DmError, DmResult};

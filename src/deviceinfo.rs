@@ -8,9 +8,9 @@ use semver::Version;
 use crate::{
     dev_ids::{DmName, DmNameBuf, DmUuid, DmUuidBuf},
     device::Device,
-    dm_flags::DmFlags,
-    dm_ioctl as dmi,
     errors::{DmError, DmResult},
+    flags::DmFlags,
+    ioctl_cmds as dmi,
     util::str_from_c_str,
 };
 

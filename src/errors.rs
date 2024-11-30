@@ -8,7 +8,7 @@ use core::fmt;
 use std::io;
 
 use crate::deviceinfo::DeviceInfo;
-use crate::dm_ioctl::DmIoctlCmd;
+use crate::ioctl_cmds::DmIoctlCmd;
 
 #[derive(Debug)]
 #[non_exhaustive]
