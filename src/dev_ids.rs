@@ -17,8 +17,8 @@
 
 use core::{borrow::Borrow, fmt, ops::Deref};
 
+use crate::bindings::{DM_NAME_LEN, DM_UUID_LEN};
 use crate::errors::{DmError, DmResult};
-use crate::ioctl_cmds::{DM_NAME_LEN, DM_UUID_LEN};
 
 #[cfg(test)]
 #[path = "tests/dev_ids.rs"]

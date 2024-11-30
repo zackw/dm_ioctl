@@ -6,11 +6,11 @@ use nix::libc::c_char;
 use semver::Version;
 
 use crate::{
+    bindings::dm_ioctl as Struct_dm_ioctl,
     dev_ids::{DmName, DmNameBuf, DmUuid, DmUuidBuf},
     device::Device,
     errors::{DmError, DmResult},
     flags::DmFlags,
-    ioctl_cmds as dmi,
     util::str_from_c_str,
 };
 
@@ -35,10 +35,10 @@ pub struct DeviceInfo {
     uuid: Option<DmUuidBuf>,
 }
 
-impl TryFrom<dmi::Struct_dm_ioctl> for DeviceInfo {
+impl TryFrom<Struct_dm_ioctl> for DeviceInfo {
     type Error = DmError;
 
-    fn try_from(ioctl: dmi::Struct_dm_ioctl) -> DmResult<Self> {
+    fn try_from(ioctl: Struct_dm_ioctl) -> DmResult<Self> {
         let uuid =
             str_from_c_str(&ioctl.uuid as &[c_char]).ok_or_else(|| {
                 DmError::IoctlResultMalformed(
@@ -84,7 +84,7 @@ impl DeviceInfo {
     /// Parses a DM ioctl structure.
     ///
     /// Equivalent to `DeviceInfo::try_from(hdr)`.
-    pub fn new(hdr: dmi::Struct_dm_ioctl) -> DmResult<Self> {
+    pub fn new(hdr: Struct_dm_ioctl) -> DmResult<Self> {
         DeviceInfo::try_from(hdr)
     }
 
