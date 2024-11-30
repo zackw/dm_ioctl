@@ -39,8 +39,19 @@ impl<T> fmt::Debug for FlexibleArrayMember<T> {
 pub const DM_DIR: &[u8; 7] = b"mapper\0";
 pub const DM_CONTROL_NODE: &[u8; 8] = b"control\0";
 
-pub const DM_MAX_TYPE_NAME: u32 = 16;
+/// Maximum size of a device-mapper target type identifier
+/// (the `target_type` field of `struct dm_target_spec`).
+/// Inclusive of C string terminator.
+pub const DM_MAX_TYPE_NAME: usize = 16;
+
+/// Maximum size of a device-mapper device name
+/// (the `name` field of `struct dm_ioctl`).
+/// Inclusive of C string terminator.
 pub const DM_NAME_LEN: usize = 128;
+
+/// Maximum size of a device-mapper device UUID
+/// (the `uuid` field of `struct dm_ioctl`).
+/// Inclusive of C string terminator.
 pub const DM_UUID_LEN: usize = 129;
 
 /// Major version of the dm ioctl interface as defined by this header.
@@ -170,7 +181,7 @@ pub struct dm_target_spec {
     pub next: c_uint,
 
     /// ???
-    pub target_type: [c_char; 16usize],
+    pub target_type: [c_char; DM_MAX_TYPE_NAME],
 
     /// Parameter string starts immediately after this object.
     /// Be careful to add padding after string to ensure correct
